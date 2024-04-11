@@ -1,0 +1,6 @@
+logs/
+test_images/
+.vscode/
+__pycache__
+*.png
+*.pth
