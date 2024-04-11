@@ -197,7 +197,7 @@ if __name__ == "__main__":
     # ------------------------------#
     #   Dataset path
     # ------------------------------#
-    VOCdevkit_path  = '/home/abhi/Thailand_Project/data/white_white/'
+    VOCdevkit_path  = '/home/abhi/PAL_Project/data/white_white/'
     # ------------------------------------------------------------------#
     #   Suggested options:
     # When there are few categories (several categories), set to True
