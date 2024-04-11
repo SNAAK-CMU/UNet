@@ -32,7 +32,7 @@ class Unet(object):
         # After training, there are multiple weight files in the logs folder. Just select the one with the lower loss in the verification set.
         # A lower loss on the verification set does not mean a higher miou, it only means that the weight has better generalization performance on the verification set.
         # ------------------------------------------------------------------#
-        "model_path": "logs/white_white/larger_run/best_epoch_weights.pth",
+        "model_path": "",
         # --------------------------------#
         # The number of classes that need to be distinguished +1 (for background)
         # --------------------------------#

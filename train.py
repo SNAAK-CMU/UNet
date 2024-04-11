@@ -42,7 +42,7 @@ if __name__ == "__main__":
     # Seed is used to fix the random seed, ensuring that each independent training session produces the same results every time.
     # -----------------------------------------------------#
     seed            = 11
-    distributed     = False
+    distributed     = True
     sync_bn         = False
     # -----------------------------------------------------#
     # fp16    Whether to use mixed precision training. It can reduce memory usage by approximately half but requires PyTorch 1.7.1 or above.
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     # Generally speaking, the training effect of the network starting from 0 will be very poor, because the weights are too random and the feature extraction effect is not obvious. Therefore, it is very, very, very not recommended that you start training from 0!
     # If you must start from 0, you can learn about the imagenet data set. First, train the classification model to obtain the weight of the backbone part of the network. The backbone part of the classification model is common to the model, and training is performed based on this.
     # ----------------------------------------------------------------------------------------------------------------------------#
-    model_path = "logs/white_white/gpu_server_larger_run/best_epoch_weights.pth"
+    model_path = "logs/white_white/last_run/best_epoch_weights.pth"
     # -----------------------------------------------------#
     #   input_shape     Enter the size of the image, must be a multiple of 32
     # -----------------------------------------------------#
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     #
     # Min_lr The minimum learning rate of the model, the default is 0.01 of the maximum learning rate
     # ------------------------------------------------------------------#
-    Init_lr             = 1e-4
+    Init_lr             = 1e-2
     Min_lr              = Init_lr * 0.01
     # ------------------------------------------------------------------#
     #   optimizer_type  The type of optimizer used, optional options include adam and sgd
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     #   weight_decay    Weight decay prevents overfitting
     #                   Adam will cause weight decay errors, and it is recommended to set it to 0 when using adam.
     # ------------------------------------------------------------------#
-    optimizer_type      = "adam"
+    optimizer_type      = "sgd"
     momentum            = 0.9
     weight_decay        = 0
     # ------------------------------------------------------------------#
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------#
     #   save_dir        The folder where weights and log files are saved
     # ------------------------------------------------------------------#
-    save_dir            = 'logs/white_white/gpu_server_larger_run/'
+    save_dir            = 'logs/white_white/latest_run/'
     # ------------------------------------------------------------------#
     #   eval_flag       Whether to perform evaluation during training, the evaluation object is the verification set
     #   eval_period     Represents how many epochs are evaluated once. Frequent evaluation is not recommended.
@@ -197,7 +197,7 @@ if __name__ == "__main__":
     # ------------------------------#
     #   Dataset path
     # ------------------------------#
-    VOCdevkit_path  = '/home/abhinandan/Desktop/data/Thailand Project/white_white/Augmentations'
+    VOCdevkit_path  = '/home/abhi/Thailand_Project/data/white_white/'
     # ------------------------------------------------------------------#
     #   Suggested options:
     # When there are few categories (several categories), set to True
