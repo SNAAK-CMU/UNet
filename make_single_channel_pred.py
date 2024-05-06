@@ -18,14 +18,15 @@ def get_mod_mask(npa):
         for height in range(npa.shape[0]):
             for width in range(npa.shape[1]):
                 mask_channels = npa[height][width]
-                num_classes = mask_channels.shape[0]
-                for class_ID in range(mask_channels.shape[0]):
+                #print(mask_channels)
+                for class_ID in range(mask_channels.shape[0]): #assign class IDs according to the colour codes defined in unet class
                     if not mask_channels[0] == 0:
                         mod_img[height][width] = 1
-                    elif not mask_channels[1] == 0:
+                    elif not mask_channels[1] == 0 and mask_channels[0] == 0:
                         mod_img[height][width] = 2
                     else:
-                        mod_img[height][width] = 0
+                        mod_img[height][width] == 0
+                    
         return mod_img
     elif npa.ndim == 2:
         # its already a single channel image
@@ -37,7 +38,7 @@ def get_mod_mask(npa):
 def process_masks(load_folderpath, save_folderpath):
     multichannel_masks = os.listdir(load_folderpath)
     
-    print("There are "+str(len(multichannel_masks))+" to convert. Processing:")
+    print("There are "+str(len(multichannel_masks))+" masks to convert. Processing:")
 
     for filepath in tqdm(multichannel_masks, total=len(multichannel_masks)):
         image = Image.open(load_folderpath+filepath)
@@ -50,14 +51,10 @@ def process_masks(load_folderpath, save_folderpath):
             
 if __name__ == "__main__":
     
-    load_folderpath = "/home/abhinandan/Desktop/data/Top Layer Grasping/Dataset_0220_blue/Augmentations/multichannel_masks/"
-    save_folderpath = "/home/abhinandan/Desktop/data/Top Layer Grasping/Dataset_0220_blue/Augmentations/masks/"
+    load_folderpath = "test_images/Thailand Project/white_white/results/multichannel_masks/"
+    save_folderpath = "test_images/Thailand Project/white_white/results/masks/"
 
     process_masks(load_folderpath=load_folderpath, save_folderpath=save_folderpath)   
     
-    load_folderpath = "/home/abhinandan/Desktop/data/Top Layer Grasping/Dataset_0220_yellow/Augmentations/multichannel_masks/"
-    save_folderpath = "/home/abhinandan/Desktop/data/Top Layer Grasping/Dataset_0220_yellow/Augmentations/masks/"
-
-    process_masks(load_folderpath=load_folderpath, save_folderpath=save_folderpath)   
     
         
