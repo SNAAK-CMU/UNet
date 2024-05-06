@@ -57,31 +57,31 @@ def per_Accuracy(hist):
 def compute_mIoU(gt_dir, pred_dir, png_name_list, num_classes, name_classes=None):  
     print('Num classes', num_classes)  
     #-----------------------------------------#
-    #   创建一个全是0的矩阵，是一个混淆矩阵
+    #   Create a matrix with all zeros, which is a confusion matrix
     #-----------------------------------------#
     hist = np.zeros((num_classes, num_classes))
     
     #------------------------------------------------#
-    #   获得验证集标签路径列表，方便直接读取
-    #   获得验证集图像分割结果路径列表，方便直接读取
+    # Obtain the verification set label path list for easy direct reading
+    # Obtain the verification set image segmentation result path list for easy direct reading
     #------------------------------------------------#
     gt_imgs     = [join(gt_dir, x + ".png") for x in png_name_list]  
     pred_imgs   = [join(pred_dir, x + ".png") for x in png_name_list]  
 
     #------------------------------------------------#
-    #   读取每一个（图片-标签）对
+    #   Read each (image tag) pair
     #------------------------------------------------#
     for ind in range(len(gt_imgs)): 
         #------------------------------------------------#
-        #   读取一张图像分割结果，转化成numpy数组
+        #   Read an image segmentation result and convert it into a numpy array
         #------------------------------------------------#
         pred = np.array(Image.open(pred_imgs[ind]))  
         #------------------------------------------------#
-        #   读取一张对应的标签，转化成numpy数组
+        #   Read a corresponding label and convert it into a numpy array
         #------------------------------------------------#
         label = np.array(Image.open(gt_imgs[ind]))  
 
-        # 如果图像分割结果与标签的大小不一样，这张图片就不计算
+        # If the image segmentation result is different from the size of the label, this image will not be calculated.
         if len(label.flatten()) != len(pred.flatten()):  
             print(
                 'Skipping: len(gt) = {:d}, len(pred) = {:d}, {:s}, {:s}'.format(
@@ -90,10 +90,10 @@ def compute_mIoU(gt_dir, pred_dir, png_name_list, num_classes, name_classes=None
             continue
 
         #------------------------------------------------#
-        #   对一张图片计算21×21的hist矩阵，并累加
+        #   Calculate the 21×21 hist matrix for an image and accumulate it
         #------------------------------------------------#
         hist += fast_hist(label.flatten(), pred.flatten(), num_classes)  
-        # 每计算10张就输出一下目前已计算的图片中所有类别平均的mIoU值
+        # Every time 10 pictures are calculated, output the average m io u value of all categories in the pictures that have been calculated so far.
         if name_classes is not None and ind > 0 and ind % 10 == 0: 
             print('{:d} / {:d}: mIou-{:0.2f}%; mPA-{:0.2f}%; Accuracy-{:0.2f}%'.format(
                     ind, 
@@ -104,13 +104,13 @@ def compute_mIoU(gt_dir, pred_dir, png_name_list, num_classes, name_classes=None
                 )
             )
     #------------------------------------------------#
-    #   计算所有验证集图片的逐类别mIoU值
+    #   Calculate the class-wise m io u values ​​of all validation set images
     #------------------------------------------------#
     IoUs        = per_class_iu(hist)
     PA_Recall   = per_class_PA_Recall(hist)
     Precision   = per_class_Precision(hist)
     #------------------------------------------------#
-    #   逐类别输出一下mIoU值
+    #   Output the m io u value by category
     #------------------------------------------------#
     if name_classes is not None:
         for ind_class in range(num_classes):
@@ -118,7 +118,7 @@ def compute_mIoU(gt_dir, pred_dir, png_name_list, num_classes, name_classes=None
                 + '; Recall (equal to the PA)-' + str(round(PA_Recall[ind_class] * 100, 2))+ '; Precision-' + str(round(Precision[ind_class] * 100, 2)))
 
     #-----------------------------------------------------------------#
-    #   在所有验证集图像上求所有类别平均的mIoU值，计算时忽略NaN值
+    #   Find the average m io u value of all categories on all validation set images, and ignore the na n value when calculating
     #-----------------------------------------------------------------#
     print('===> mIoU: ' + str(round(np.nanmean(IoUs) * 100, 2)) + '; mPA: ' + str(round(np.nanmean(PA_Recall) * 100, 2)) + '; Accuracy: ' + str(round(per_Accuracy(hist) * 100, 2)))  
     return np.array(hist, int), IoUs, PA_Recall, Precision
