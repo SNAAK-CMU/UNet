@@ -34,12 +34,14 @@ def fit_one_epoch(model_train, model, loss_history, eval_callback, optimizer, ep
         optimizer.zero_grad()
         if not fp16:
             #----------------------#
-            #   前向传播
+            #   Forward communication
             #----------------------#
+
             outputs = model_train(imgs)
             #----------------------#
-            #   损失计算
+            #   Loss calculation
             #----------------------#
+
             if focal_loss:
                 loss = Focal_Loss(outputs, pngs, weights, num_classes = num_classes)
             else:
@@ -51,8 +53,9 @@ def fit_one_epoch(model_train, model, loss_history, eval_callback, optimizer, ep
 
             with torch.no_grad():
                 #-------------------------------#
-                #   计算f_score
+                #   Calculate f_score
                 #-------------------------------#
+
                 _f_score = f_score(outputs, labels)
 
             loss.backward()
@@ -61,12 +64,14 @@ def fit_one_epoch(model_train, model, loss_history, eval_callback, optimizer, ep
             from torch.cuda.amp import autocast
             with autocast():
                 #----------------------#
-                #   前向传播
+                #   Forward communication
                 #----------------------#
+
                 outputs = model_train(imgs)
                 #----------------------#
-                #   损失计算
+                #   Loss calculation
                 #----------------------#
+
                 if focal_loss:
                     loss = Focal_Loss(outputs, pngs, weights, num_classes = num_classes)
                 else:
@@ -78,13 +83,15 @@ def fit_one_epoch(model_train, model, loss_history, eval_callback, optimizer, ep
 
                 with torch.no_grad():
                     #-------------------------------#
-                    #   计算f_score
+                    #   Calculate f_score
                     #-------------------------------#
+
                     _f_score = f_score(outputs, labels)
 
             #----------------------#
-            #   反向传播
+            #   Backpropagation
             #----------------------#
+
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
@@ -118,12 +125,14 @@ def fit_one_epoch(model_train, model, loss_history, eval_callback, optimizer, ep
                 weights = weights.cuda(local_rank)
 
             #----------------------#
-            #   前向传播
+            #   Forward communication
             #----------------------#
+
             outputs = model_train(imgs)
             #----------------------#
-            #   损失计算
+            #   Loss calculation
             #----------------------#
+
             if focal_loss:
                 loss = Focal_Loss(outputs, pngs, weights, num_classes = num_classes)
             else:
@@ -133,8 +142,9 @@ def fit_one_epoch(model_train, model, loss_history, eval_callback, optimizer, ep
                 main_dice = Dice_loss(outputs, labels)
                 loss  = loss + main_dice
             #-------------------------------#
-            #   计算f_score
+            #   Calculate f_score
             #-------------------------------#
+
             _f_score    = f_score(outputs, labels)
 
             val_loss    += loss.item()
@@ -155,8 +165,9 @@ def fit_one_epoch(model_train, model, loss_history, eval_callback, optimizer, ep
         print('Total Loss: %.3f || Val Loss: %.3f ' % (total_loss / epoch_step, val_loss / epoch_step_val))
         
         #-----------------------------------------------#
-        #   保存权值
+        #   Save the right value
         #-----------------------------------------------#
+
         if (epoch + 1) % save_period == 0 or epoch + 1 == Epoch:
             torch.save(model.state_dict(), os.path.join(save_dir, 'ep%03d-loss%.3f-val_loss%.3f.pth'%((epoch + 1), total_loss / epoch_step, val_loss / epoch_step_val)))
 
@@ -189,12 +200,14 @@ def fit_one_epoch_no_val(model_train, model, loss_history, optimizer, epoch, epo
         optimizer.zero_grad()
         if not fp16:
             #----------------------#
-            #   前向传播
+            #   Forward communication
             #----------------------#
+
             outputs = model_train(imgs)
             #----------------------#
-            #   损失计算
+            #   Loss calculation
             #----------------------#
+
             if focal_loss:
                 loss = Focal_Loss(outputs, pngs, weights, num_classes = num_classes)
             else:
@@ -206,8 +219,9 @@ def fit_one_epoch_no_val(model_train, model, loss_history, optimizer, epoch, epo
 
             with torch.no_grad():
                 #-------------------------------#
-                #   计算f_score
+                #   Calculate f_score
                 #-------------------------------#
+
                 _f_score = f_score(outputs, labels)
 
             loss.backward()
@@ -216,12 +230,14 @@ def fit_one_epoch_no_val(model_train, model, loss_history, optimizer, epoch, epo
             from torch.cuda.amp import autocast
             with autocast():
                 #----------------------#
-                #   前向传播
+                #   Forward communication
                 #----------------------#
+
                 outputs = model_train(imgs)
                 #----------------------#
-                #   损失计算
+                #   Loss calculation
                 #----------------------#
+
                 if focal_loss:
                     loss = Focal_Loss(outputs, pngs, weights, num_classes = num_classes)
                 else:
@@ -233,13 +249,15 @@ def fit_one_epoch_no_val(model_train, model, loss_history, optimizer, epoch, epo
 
                 with torch.no_grad():
                     #-------------------------------#
-                    #   计算f_score
+                    #   Calculate f_score
                     #-------------------------------#
+
                     _f_score = f_score(outputs, labels)
 
             #----------------------#
-            #   反向传播
+            #   Backpropagation
             #----------------------#
+
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
@@ -260,8 +278,9 @@ def fit_one_epoch_no_val(model_train, model, loss_history, optimizer, epoch, epo
         print('Total Loss: %.3f' % (total_loss / epoch_step))
         
         #-----------------------------------------------#
-        #   保存权值
+        #   Save the right value
         #-----------------------------------------------#
+
         if (epoch + 1) % save_period == 0 or epoch + 1 == Epoch:
             torch.save(model.state_dict(), os.path.join(save_dir, 'ep%03d-loss%.3f.pth'%((epoch + 1), total_loss / epoch_step)))
 
