@@ -60,13 +60,13 @@ class Bottleneck(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         width = int(planes * (base_width / 64.)) * groups
-        # 利用1x1卷积下降通道数
+        # Decrease the number of channels using 1x1 convolution
         self.conv1 = conv1x1(inplanes, width)
         self.bn1 = norm_layer(width)
-        # 利用3x3卷积进行特征提取
+        # Feature extraction using 3x3 convolution
         self.conv2 = conv3x3(width, width, stride, groups, dilation)
         self.bn2 = norm_layer(width)
-        # 利用1x1卷积上升通道数
+        # Using 1x1 convolutional number of ascending channels
         self.conv3 = conv1x1(width, planes * self.expansion)
         self.bn3 = norm_layer(planes * self.expansion)
 
@@ -100,8 +100,8 @@ class Bottleneck(nn.Module):
 class ResNet(nn.Module):
     def __init__(self, block, layers, num_classes=1000):
         #-----------------------------------------------------------#
-        #   假设输入图像为600,600,3
-        #   当我们使用resnet50的时候
+        #   Assume that the input image is 600,600,3
+        #   When we use resnet50
         #-----------------------------------------------------------#
         self.inplanes = 64
         super(ResNet, self).__init__()

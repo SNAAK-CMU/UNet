@@ -6,8 +6,8 @@ from PIL import Image
 
 
 #---------------------------------------------------------#
-#   将图像转换成RGB图像，防止灰度图在预测时报错。
-#   代码仅仅支持RGB图像的预测，所有其它类型的图像都会转化成RGB
+#   Convert the image to RGB image to prevent grayscale images from reporting errors during prediction.
+#   The code only supports the prediction of RGB images, and all other types of images will be converted into RGB.
 #---------------------------------------------------------#
 def cvtColor(image):
     if len(np.shape(image)) == 3 and np.shape(image)[2] == 3:
@@ -17,7 +17,7 @@ def cvtColor(image):
         return image 
 
 #---------------------------------------------------#
-#   对输入图像进行resize
+#   Resize the input image
 #---------------------------------------------------#
 def resize_image(image, size):
     iw, ih  = image.size
@@ -34,14 +34,14 @@ def resize_image(image, size):
     return new_image, nw, nh
     
 #---------------------------------------------------#
-#   获得学习率
+#   Get learning rate
 #---------------------------------------------------#
 def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
 
 #---------------------------------------------------#
-#   设置种子
+#   Set seeds
 #---------------------------------------------------#
 def seed_everything(seed=11):
     random.seed(seed)
@@ -53,7 +53,7 @@ def seed_everything(seed=11):
     torch.backends.cudnn.benchmark = False
 
 #---------------------------------------------------#
-#   设置Dataloader的种子
+#   Set the seed of the Dataloader
 #---------------------------------------------------#
 def worker_init_fn(worker_id, rank, seed):
     worker_seed = rank + seed

@@ -27,23 +27,26 @@ class UnetDataset(Dataset):
         name            = annotation_line.split()[0]
 
         #-------------------------------#
-        #   从文件中读取图像
+        #   Read image from file
         #-------------------------------#
+
         jpg         = Image.open(os.path.join(os.path.join(self.dataset_path, "imgs"), name + ".jpg"))
         png         = Image.open(os.path.join(os.path.join(self.dataset_path, "masks"), name + ".png"))
         #-------------------------------#
-        #   数据增强
+        #   Data Enhancement
         #-------------------------------#
+
         jpg, png    = self.get_random_data(jpg, png, self.input_shape, random = self.train)
 
         jpg         = np.transpose(preprocess_input(np.array(jpg, np.float64)), [2,0,1])
         png         = np.array(png)
         png[png >= self.num_classes] = self.num_classes
         #-------------------------------------------------------#
-        #   转化成one_hot的形式
-        #   在这里需要+1是因为voc数据集有些标签具有白边部分
-        #   我们需要将白边部分进行忽略，+1的目的是方便忽略。
+        #   Convert to one_hot
+        #   +1 is needed here because some tags of the voc dataset have white edge parts
+        #   We need to ignore the white edge part, and the purpose of +1 is to facilitate ignoring.
         #-------------------------------------------------------#
+
         seg_labels  = np.eye(self.num_classes + 1)[png.reshape([-1])]
         seg_labels  = seg_labels.reshape((int(self.input_shape[0]), int(self.input_shape[1]), self.num_classes + 1))
 
@@ -56,8 +59,9 @@ class UnetDataset(Dataset):
         image   = cvtColor(image)
         label   = Image.fromarray(np.array(label))
         #------------------------------#
-        #   获得图像的高宽与目标高宽
+        #   Obtain the height and width of the image and the target height and width
         #------------------------------#
+
         iw, ih  = image.size
         h, w    = input_shape
 
@@ -77,8 +81,9 @@ class UnetDataset(Dataset):
             return new_image, new_label
 
         #------------------------------------------#
-        #   对图像进行缩放并且进行长和宽的扭曲
+        #   Scaling the image and distorting length and width
         #------------------------------------------#
+
         new_ar = iw/ih * self.rand(1-jitter,1+jitter) / self.rand(1-jitter,1+jitter)
         scale = self.rand(0.25, 2)
         if new_ar < 1:
@@ -91,16 +96,18 @@ class UnetDataset(Dataset):
         label = label.resize((nw,nh), Image.NEAREST)
         
         #------------------------------------------#
-        #   翻转图像
+        #   Flip the image
         #------------------------------------------#
+
         flip = self.rand()<.5
         if flip: 
             image = image.transpose(Image.FLIP_LEFT_RIGHT)
             label = label.transpose(Image.FLIP_LEFT_RIGHT)
         
         #------------------------------------------#
-        #   将图像多余的部分加上灰条
+        #   Add grey strips to the excess part of the image
         #------------------------------------------#
+
         dx = int(self.rand(0, w-nw))
         dy = int(self.rand(0, h-nh))
         new_image = Image.new('RGB', (w,h), (128,128,128))
@@ -110,20 +117,22 @@ class UnetDataset(Dataset):
         image = new_image
         label = new_label
 
-        image_data      = np.array(image, np.uint8)
+        image_data = np.array(image, np.uint8)
         #---------------------------------#
-        #   对图像进行色域变换
-        #   计算色域变换的参数
+        #   Perform color gamut transformation on images
+        #   Calculate the parameters of color gamut transformation
         #---------------------------------#
-        r               = np.random.uniform(-1, 1, 3) * [hue, sat, val] + 1
+
+        r = np.random.uniform(-1, 1, 3) * [hue, sat, val] + 1
         #---------------------------------#
         #   将图像转到HSV上
         #---------------------------------#
-        hue, sat, val   = cv2.split(cv2.cvtColor(image_data, cv2.COLOR_RGB2HSV))
-        dtype           = image_data.dtype
+        hue, sat, val = cv2.split(cv2.cvtColor(image_data, cv2.COLOR_RGB2HSV))
+        dtype = image_data.dtype
         #---------------------------------#
-        #   应用变换
+        #   Apply Transformation
         #---------------------------------#
+
         x       = np.arange(0, 256, dtype=r.dtype)
         lut_hue = ((x * r[0]) % 180).astype(dtype)
         lut_sat = np.clip(x * r[1], 0, 255).astype(dtype)
@@ -134,7 +143,8 @@ class UnetDataset(Dataset):
         
         return image_data, label
 
-# DataLoader中collate_fn使用
+# Use collate fn in Data loader
+
 def unet_dataset_collate(batch):
     images      = []
     pngs        = []

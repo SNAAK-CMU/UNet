@@ -114,20 +114,23 @@ class EvalCallback():
 
     def get_miou_png(self, image):
         #---------------------------------------------------------#
-        #   在这里将图像转换成RGB图像，防止灰度图在预测时报错。
-        #   代码仅仅支持RGB图像的预测，所有其它类型的图像都会转化成RGB
+        #   Here, the image is converted into an RGB image to prevent the grayscale image from reporting errors during prediction.
+        #   The code only supports the prediction of RGB images, and all other types of images will be converted into RGB.
         #---------------------------------------------------------#
+
         image       = cvtColor(image)
         orininal_h  = np.array(image).shape[0]
         orininal_w  = np.array(image).shape[1]
         #---------------------------------------------------------#
-        #   给图像增加灰条，实现不失真的resize
-        #   也可以直接resize进行识别
+        #   Add gray strips to the image to achieve resize without distortion
+        #   You can also directly resize for identification
         #---------------------------------------------------------#
+
         image_data, nw, nh  = resize_image(image, (self.input_shape[1],self.input_shape[0]))
         #---------------------------------------------------------#
-        #   添加上batch_size维度
+        #   Add batch_size dimension
         #---------------------------------------------------------#
+
         image_data  = np.expand_dims(np.transpose(preprocess_input(np.array(image_data, np.float32)), (2, 0, 1)), 0)
 
         with torch.no_grad():
@@ -136,25 +139,29 @@ class EvalCallback():
                 images = images.cuda()
                 
             #---------------------------------------------------#
-            #   图片传入网络进行预测
+            #   Images are sent to the network for prediction
             #---------------------------------------------------#
+
             pr = self.net(images)[0]
             #---------------------------------------------------#
-            #   取出每一个像素点的种类
+            #   Take out the type of each pixel point
             #---------------------------------------------------#
+
             pr = F.softmax(pr.permute(1,2,0),dim = -1).cpu().numpy()
             #--------------------------------------#
-            #   将灰条部分截取掉
+            #   Strip the gray strips
             #--------------------------------------#
+
             pr = pr[int((self.input_shape[0] - nh) // 2) : int((self.input_shape[0] - nh) // 2 + nh), \
                     int((self.input_shape[1] - nw) // 2) : int((self.input_shape[1] - nw) // 2 + nw)]
             #---------------------------------------------------#
-            #   进行图片的resize
+            #   Resize the image
             #---------------------------------------------------#
             pr = cv2.resize(pr, (orininal_w, orininal_h), interpolation = cv2.INTER_LINEAR)
             #---------------------------------------------------#
-            #   取出每一个像素点的种类
+            #   Get the class of each pixel point
             #---------------------------------------------------#
+
             pr = pr.argmax(axis=-1)
     
         image = Image.fromarray(np.uint8(pr))
@@ -172,18 +179,21 @@ class EvalCallback():
             print("Get miou.")
             for image_id in tqdm(self.image_ids):
                 #-------------------------------#
-                #   从文件中读取图像
+                #   Read image from file
                 #-------------------------------#
+
                 image_path  = os.path.join(self.dataset_path, "imgs/"+image_id+".jpg")
                 image       = Image.open(image_path)
                 #------------------------------#
-                #   获得预测txt
+                #   Obtain prediction txt
                 #------------------------------#
+
                 image       = self.get_miou_png(image)
                 image.save(os.path.join(pred_dir, image_id + ".png"))
                         
             print("Calculate miou.")
-            _, IoUs, _, _ = compute_mIoU(gt_dir, pred_dir, self.image_ids, self.num_classes, None)  # 执行计算mIoU的函数
+            _, IoUs, _, _ = compute_mIoU(gt_dir, pred_dir, self.image_ids, self.num_classes, None)  # Execute the function that calculates miou
+
             temp_miou = np.nanmean(IoUs) * 100
 
             self.mious.append(temp_miou)
