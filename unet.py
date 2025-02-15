@@ -3,10 +3,6 @@ import copy
 import time
 import os
 
-# check if these are heavy and move inside onnx block if so
-import onnx
-import onnxsim
-import onnxruntime
 
 import cv2
 import numpy as np
@@ -32,7 +28,7 @@ class Unet(object):
         # After training, there are multiple weight files in the logs folder. Just select the one with the lower loss in the verification set.
         # A lower loss on the verification set does not mean a higher miou, it only means that the weight has better generalization performance on the verification set.
         # ------------------------------------------------------------------#
-        "model_path": "logs/white_white/larger_run/best_epoch_weights.pth",
+        "model_path": "logs/cheese/top_and_other/best_epoch_weights.pth",
         # --------------------------------#
         # The number of classes that need to be distinguished +1 (for background)
         # --------------------------------#
@@ -44,7 +40,7 @@ class Unet(object):
         # --------------------------------#
         # Enter the size of the image
         # --------------------------------#
-        "input_shape": [1152, 768],
+        "input_shape": [640, 640],
         # ------------------------------------------------#
         # The mix_type parameter is used to control the way the detection results are visualized.
         #
@@ -52,7 +48,7 @@ class Unet(object):
         # mix_type = 1 means only retaining the masks
         # When mix_type = 2, it means that only the background is deducted and only the target in the original image is retained.
         # ------------------------------------------------#
-        "mix_type": 0,
+        "mix_type": 1,
         # --------------------------------#
         # Whether to use Cuda
         # Set to False if there is no GPU available
@@ -71,7 +67,7 @@ class Unet(object):
         # Set different colors for the picture frame
         # --------------------------------------------------#
         if self.num_classes <= 21:
-            self.colors = [ (0, 0, 0), (255, 0, 0), (0, 255, 0), (128, 128, 0), (0, 0, 128), (128, 0, 128), (0, 128, 128), 
+            self.colors = [ (0, 0, 0), (250, 250, 55), (250, 106, 77), (0, 0, 128), (0, 0, 128), (128, 0, 128), (0, 128, 128), 
                             (128, 128, 128), (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0), (64, 0, 128), (192, 0, 128), 
                             (64, 128, 128), (192, 128, 128), (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128), 
                             (128, 64, 12)]
@@ -265,6 +261,9 @@ class Unet(object):
         return tact_time
 
     def convert_to_onnx(self, simplify, model_path):
+        import onnx
+        import onnxsim
+        import onnxruntime
 
         self.generate(onnx=True)
 

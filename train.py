@@ -18,7 +18,7 @@ from utils.utils import (download_weights, seed_everything, show_config,
 from utils.utils_fit import fit_one_epoch
 
 '''
-author: Dong
+author: Abhi
 Instructions:
     Data Requirements:
         Input images should be .jpg images. They do not need to have a fixed size and will be automatically resized before training.
@@ -81,11 +81,11 @@ if __name__ == "__main__":
     # Generally speaking, the training effect of the network starting from 0 will be very poor, because the weights are too random and the feature extraction effect is not obvious. Therefore, it is very, very, very not recommended that you start training from 0!
     # If you must start from 0, you can learn about the imagenet data set. First, train the classification model to obtain the weight of the backbone part of the network. The backbone part of the classification model is common to the model, and training is performed based on this.
     # ----------------------------------------------------------------------------------------------------------------------------#
-    model_path = "logs/white_white/gpu_server_larger_run/best_epoch_weights.pth"
+    model_path = ""
     # -----------------------------------------------------#
     #   input_shape     Enter the size of the image, must be a multiple of 32
     # -----------------------------------------------------#
-    input_shape = [1152, 768]
+    input_shape = [640, 640]
 
     # ----------------------------------------------------------------------------------------------------------------------------#
     #   Training is divided into two phases, the freezing phase and the defrosting phase. The freezing stage is set up to meet the training needs of students with insufficient machine performance.
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------#
     Init_Epoch          = 0
     Freeze_Epoch        = 100
-    Freeze_batch_size   = 2
+    Freeze_batch_size   = 8
     # ------------------------------------------------------------------#
     # Training parameters during the unfreezing phase
     # At this time, the backbone of the model is no longer frozen, and the feature extraction network will change.
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     # Unfreeze_batch_size batch_size of the model after unfreezing
     # ------------------------------------------------------------------#
     UnFreeze_Epoch      = 1000
-    Unfreeze_batch_size = 2
+    Unfreeze_batch_size = 8
     # ------------------------------------------------------------------#
     #   Freeze_Train    Whether to perform freeze training
     #                   By default, trunk training is frozen first and then unfrozen.
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------#
     #   save_dir        The folder where weights and log files are saved
     # ------------------------------------------------------------------#
-    save_dir            = 'logs/white_white/gpu_server_larger_run/'
+    save_dir            = 'logs/cheese/run3'
     # ------------------------------------------------------------------#
     #   eval_flag       Whether to perform evaluation during training, the evaluation object is the verification set
     #   eval_period     Represents how many epochs are evaluated once. Frequent evaluation is not recommended.
@@ -197,7 +197,7 @@ if __name__ == "__main__":
     # ------------------------------#
     #   Dataset path
     # ------------------------------#
-    VOCdevkit_path  = '/home/abhinandan/Desktop/data/Thailand Project/white_white/Augmentations'
+    VOCdevkit_path  = '/home/snaak/Documents/datasets/cheese/training_sets'
     # ------------------------------------------------------------------#
     #   Suggested options:
     # When there are few categories (several categories), set to True

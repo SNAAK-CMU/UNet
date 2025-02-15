@@ -31,7 +31,7 @@ if __name__ == "__main__":
     # count, name_classes are only valid when mode='predict'
     #--------------------------------------------------------------------------#
     count           = False
-    name_classes    = ["background","inner_piece","outer_piece"]
+    name_classes    = ["background","top_cheese","other_cheese"]
     #----------------------------------------------------------------------------------------------------------#
     #   video_path          Used to specify the path of the video. When video path = 0 means detecting the camera
     #                       If you want to detect videos, set the video path like = "xxx.mp4" That’s it, it means reading xxx in the root directory.MP4 files.
