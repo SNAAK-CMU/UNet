@@ -1,4 +1,4 @@
-# This is my personal UNet Repository
+# UNet Repository for SNAAK
 
 ## Steps
 
@@ -28,6 +28,15 @@
 For tensorboard
 
 ### Inference:
+
+#### General:
+
 1. in predict.py set the "mode" accordingly. "predict" is the default mode
 2. in unet.py set the model_path, num_classes, input_shape and mix_type as needed
 3. run predict.py
+
+#### For Ingredients:
+
+1. check ingredients_UNet.py
+2. follow workflow in "__main__" to load ingredint specific model and class names 
+3. the example also uses ImageUtils() class to get center of top layer mask 
