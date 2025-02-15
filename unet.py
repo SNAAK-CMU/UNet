@@ -3,10 +3,6 @@ import copy
 import time
 import os
 
-# check if these are heavy and move inside onnx block if so
-import onnx
-import onnxsim
-import onnxruntime
 
 import cv2
 import numpy as np
@@ -52,7 +48,7 @@ class Unet(object):
         # mix_type = 1 means only retaining the masks
         # When mix_type = 2, it means that only the background is deducted and only the target in the original image is retained.
         # ------------------------------------------------#
-        "mix_type": 0,
+        "mix_type": 1,
         # --------------------------------#
         # Whether to use Cuda
         # Set to False if there is no GPU available
@@ -265,6 +261,9 @@ class Unet(object):
         return tact_time
 
     def convert_to_onnx(self, simplify, model_path):
+        import onnx
+        import onnxsim
+        import onnxruntime
 
         self.generate(onnx=True)
 
