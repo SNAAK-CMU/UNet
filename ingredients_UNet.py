@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-from unet import Unet
 from PIL import Image
 import numpy as np
 import cv2
@@ -8,12 +7,13 @@ import cv2
 import sys
 import os
 
-# Get the absolute path of the parent directory
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# # Get the absolute path of the parent directory
+current_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
     
-# Add the parent directory to sys.path
-sys.path.append(parent_dir)
+# # Add the parent directory to sys.path
+sys.path.append(current_dir)
 
+from unet.unet import Unet
 from post_processing.image_utlis import ImageUtils
 
 class Ingredients_UNet(Unet):
