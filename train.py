@@ -81,7 +81,7 @@ if __name__ == "__main__":
     # Generally speaking, the training effect of the network starting from 0 will be very poor, because the weights are too random and the feature extraction effect is not obvious. Therefore, it is very, very, very not recommended that you start training from 0!
     # If you must start from 0, you can learn about the imagenet data set. First, train the classification model to obtain the weight of the backbone part of the network. The backbone part of the classification model is common to the model, and training is performed based on this.
     # ----------------------------------------------------------------------------------------------------------------------------#
-    model_path = ""
+    model_path = "logs/cheese/high_res/best_epoch_weights.pth"
     # -----------------------------------------------------#
     #   input_shape     Enter the size of the image, must be a multiple of 32
     # -----------------------------------------------------#
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------#
     #   save_dir        The folder where weights and log files are saved
     # ------------------------------------------------------------------#
-    save_dir            = 'logs/cheese/run3'
+    save_dir            = 'logs/cheese/multi_ingredient_mozarella'
     # ------------------------------------------------------------------#
     #   eval_flag       Whether to perform evaluation during training, the evaluation object is the verification set
     #   eval_period     Represents how many epochs are evaluated once. Frequent evaluation is not recommended.
@@ -197,7 +197,7 @@ if __name__ == "__main__":
     # ------------------------------#
     #   Dataset path
     # ------------------------------#
-    VOCdevkit_path  = '/home/snaak/Documents/datasets/cheese/training_sets'
+    VOCdevkit_path  = '/home/snaak/Documents/datasets/cheese/multiingredient_cheese_pickup'
     # ------------------------------------------------------------------#
     #   Suggested options:
     # When there are few categories (several categories), set to True
