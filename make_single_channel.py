@@ -6,7 +6,7 @@ from labelme import utils
 import os
 from tqdm import tqdm
 import multiprocessing
-
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def get_mod_mask(npa):
     mask_color_type_1=[255, 106, 77] # top cheese color
@@ -32,14 +32,32 @@ def get_mod_mask(npa):
             
 
 def process_masks_multithread(load_folderpath, save_folderpath):
-    # TODO process masks in parallel but ensure that the order is maintained and names do not change
-    pass
+    multichannel_mask_names = os.listdir(load_folderpath)
+    print(f"There are {len(multichannel_mask_names)} masks to convert. Processing:")
+
+    # Adjust the number of threads to leave some CPU cores available for other processes
+    max_workers = max(1, multiprocessing.cpu_count() - 10) # leave 10 cores free
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(process_single_mask, filepath, load_folderpath, save_folderpath): filepath for filepath in multichannel_mask_names}
+        for future in tqdm(as_completed(futures), total=len(futures)):
+            filepath = futures[future]
+            try:
+                future.result()
+            except Exception as exc:
+                print(f"{filepath} generated an exception: {exc}")
+
+    print(f"Saved masks to {save_folderpath}")
 
 def process_single_mask(filepath, load_folderpath, save_folderpath):
-    image = Image.open(load_folderpath+filepath)
+    savepath = save_folderpath + filepath
+    if os.path.exists(savepath):
+        print(f"File {savepath} already exists. Skipping.")
+        return
+
+    image = Image.open(load_folderpath + filepath)
     npa = np.array(image)
     mod_img = get_mod_mask(npa)
-    savepath = save_folderpath+filepath
     utils.lblsave(savepath, mod_img)
     print("Saved mask to", savepath)
 
@@ -60,9 +78,8 @@ def process_masks(load_folderpath, save_folderpath):
             
 if __name__ == "__main__":
     
-    load_folderpath = "/home/snaak/Documents/datasets/cheese/multiingredient_cheese_pickup/multichannel_masks/"
-    save_folderpath = "/home/snaak/Documents/datasets/cheese/multiingredient_cheese_pickup/masks/"
+    load_folderpath = "/home/snaak/Documents/datasets/cheese/multiingredient_cheese_pickup/augmented_color_masks_new/"
+    save_folderpath = "/home/snaak/Documents/datasets/cheese/multiingredient_cheese_pickup/augmented_class_masks_new/"
 
-    process_masks(load_folderpath=load_folderpath, save_folderpath=save_folderpath)   
+    process_masks_multithread(load_folderpath=load_folderpath, save_folderpath=save_folderpath)   
     
-        
