@@ -36,11 +36,11 @@ class Ingredients_UNet(Unet):
 
 if __name__ == "__main__":
     # Test initialisation for cheese
-    Cheese_UNet = Ingredients_UNet(count=False, classes=["background","top_cheese","other_cheese"], model_path="logs/cheese/high_res/best_epoch_weights.pth", mix_type=1)
+    Cheese_UNet = Ingredients_UNet(count=False, classes=["background","top_cheese","other_cheese"], model_path="logs/cheese/best_epoch_weights.pth", mix_type=1)
     img_utils = ImageUtils()
 
-    load_directory = "/home/snaak/Documents/datasets/cheese/SNAAK_all_ingredient_test/imgs/"
-    save_directory = "/home/snaak/Documents/datasets/cheese/SNAAK_all_ingredient_test/test_masks/"
+    load_directory = "/home/snaak/Documents/data/CHE_images_032425/"
+    save_directory = "/home/snaak/Documents/data/CHE_images_032425/pred_binary_masks/"
 
     img_names = os.listdir(load_directory)
     for img_name in tqdm(img_names):
@@ -48,7 +48,7 @@ if __name__ == "__main__":
             image_path  = os.path.join(load_directory, img_name)
             image       = Image.open(image_path)
             r_image     = Cheese_UNet.detect_image(image)
-            top_layer_mask = Cheese_UNet.get_top_layer(r_image, [250, 106, 77])
+            top_layer_mask = Cheese_UNet.get_top_layer(r_image, [250, 250, 55])
             binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
             if not os.path.exists(save_directory):
                 os.makedirs(save_directory)
