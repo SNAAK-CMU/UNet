@@ -24,7 +24,7 @@ class Ingredients_UNet(Unet):
         self.img_utils = ImageUtils()
 
     def get_top_layer(self, image, top_layer_rgb):
-        mask = self.detect_image(image) # TODO: change this in parent class to assign class ID to pixels instead of RGB
+        mask = np.array(self.detect_image(image)) # TODO: change this in parent class to assign class ID to pixels instead of RGB
         mod_img = np.zeros(
             [np.shape(mask)[0], np.shape(mask)[1], np.shape(mask)[2]]
         )
@@ -36,7 +36,7 @@ class Ingredients_UNet(Unet):
         return Image.fromarray(np.uint8(mod_img))
 
     def get_top_layer_binary(self, image, top_layer_rgb):
-        top_layer_mask = self.get_top_layer(image, top_layer_rgb)
+        top_layer_mask = np.array(self.get_top_layer(image, top_layer_rgb))
         binary_mask = Image.fromarray(self.img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
         return binary_mask
 
@@ -46,15 +46,17 @@ if __name__ == "__main__":
     img_utils = ImageUtils()
 
     load_directory = "/home/snaak/Documents/data/CHE_images_032425/"
-    save_directory = "/home/snaak/Documents/data/CHE_images_032425/pred_binary_masks/"
+    save_directory = "/home/snaak/Documents/data/CHE_images_032425/pred_binary_masks_new/"
 
     img_names = os.listdir(load_directory)
     for img_name in tqdm(img_names):
         if img_name.lower().endswith(('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.pbm', '.pgm', '.ppm', '.tif', '.tiff')):
             image_path  = os.path.join(load_directory, img_name)
             image       = Image.open(image_path)
+            print("Opened Image:", image_path)
             # r_image     = Cheese_UNet.detect_image(image)
-            # top_layer_mask = Cheese_UNet.get_top_layer(r_image, [250, 250, 55])
+
+            # top_layer_mask = Cheese_UNet.get_top_layer(np.array(r_image), [250, 250, 55])
             # binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
             binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
             if not os.path.exists(save_directory):
