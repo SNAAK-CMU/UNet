@@ -43,6 +43,13 @@ For tensorboard
 
 ## Submodule Management:
 
+### Meaning of different terms:
+1. Module: This repository
+2. Submodules: The directories in other repositories where this module has been added as a submodule
+3. Parent Repositories: The other repositories where this module has been added as a submodule
+
+### Management Instructions:
+
 1. Whenever changes are made to this module and pushed, remember to pull those changes into any existing submodules by connecting to the upstream branch and pulling:
 
     ```bash
