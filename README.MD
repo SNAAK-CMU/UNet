@@ -40,3 +40,33 @@ For tensorboard
 1. check ingredients_UNet.py
 2. follow workflow in "__main__" to load ingredint specific model and class names 
 3. the example also uses ImageUtils() class to get center of top layer mask 
+
+## Submodule Management:
+
+1. Whenever changes are made to this module and pushed, remember to pull those changes into any existing submodules by connecting to the upstream branch and pulling:
+
+    ```bash
+    cd inside submodule directory
+    git checkout <branch>
+    git pull
+    ```
+
+    And update the submodule's parent repository by running:
+
+    ```bash
+    cd outside submodule directory
+    git add <submodule directory>
+    git commit -m "updated <submodule>"
+    git pull
+    git push
+    ```
+
+2. Once the submodule is updated inside the parent repository, remember to run 
+
+    ```bash
+    git submodule update
+    ```
+
+    Wherever the parent repository is cloned
+
+
