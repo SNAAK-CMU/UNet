@@ -24,7 +24,7 @@ class Ingredients_UNet(Unet):
         self.img_utils = ImageUtils()
 
     def get_top_layer(self, image, top_layer_rgb):
-        mask = self.detect_image(image)
+        mask = self.detect_image(image) # TODO: change this in parent class to assign class ID to pixels instead of RGB
         mod_img = np.zeros(
             [np.shape(mask)[0], np.shape(mask)[1], np.shape(mask)[2]]
         )
