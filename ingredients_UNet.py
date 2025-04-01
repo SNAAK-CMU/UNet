@@ -21,9 +21,10 @@ from img_utils import ImageUtils
 class Ingredients_UNet(Unet):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.img_utils = ImageUtils()
 
-    def get_top_layer(self, mask, top_layer_rgb):
-        mask = np.array(mask)
+    def get_top_layer(self, image, top_layer_rgb):
+        mask = self.detect_image(image)
         mod_img = np.zeros(
             [np.shape(mask)[0], np.shape(mask)[1], np.shape(mask)[2]]
         )
@@ -33,6 +34,11 @@ class Ingredients_UNet(Unet):
                     if (mask[height][width] == top_layer_rgb).all(): 
                       mod_img[height][width] = mask[height][width][0]
         return Image.fromarray(np.uint8(mod_img))
+
+    def get_top_layer_binary(self, image, top_layer_rgb):
+        top_layer_mask = self.get_top_layer(image, top_layer_rgb)
+        binary_mask = Image.fromarray(self.img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
+        return binary_mask
 
 if __name__ == "__main__":
     # Test initialisation for cheese
@@ -47,9 +53,10 @@ if __name__ == "__main__":
         if img_name.lower().endswith(('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.pbm', '.pgm', '.ppm', '.tif', '.tiff')):
             image_path  = os.path.join(load_directory, img_name)
             image       = Image.open(image_path)
-            r_image     = Cheese_UNet.detect_image(image)
-            top_layer_mask = Cheese_UNet.get_top_layer(r_image, [250, 250, 55])
-            binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
+            # r_image     = Cheese_UNet.detect_image(image)
+            # top_layer_mask = Cheese_UNet.get_top_layer(r_image, [250, 250, 55])
+            # binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
+            binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
             if not os.path.exists(save_directory):
                 os.makedirs(save_directory)
             # r_image.save(os.path.join(save_directory, img_name))
