@@ -1,41 +1,68 @@
-# to make multi-channel masks into single channel masks
+# To make multi-channel masks into single-channel masks
 import numpy as np
-#import cupy as np
 from PIL import Image
 from labelme import utils
 import os
 from tqdm import tqdm
 import multiprocessing
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from multiprocessing import Pool
+
 
 def get_mod_mask(npa, mask_color_type_1=None, mask_color_type_2=None):
-    #print("Number of dimensions: ", npa.ndim)
+    """
+    Converts a multi-channel mask into a single-channel mask based on specified colors.
+    """
     if npa.ndim == 3:
-        #print("Image is 3D. Converting to single channel...")
-        mod_img = np.zeros([np.shape(npa)[0], np.shape(npa)[1]])
-        for height in range(npa.shape[0]):
-            for width in range(npa.shape[1]):
-                # in each pixel
-                mask_channels = npa[height][width] # get the RGB channels
-                for _ in range(mask_channels.shape[0]):
-                    # making the value of each pixel of the image is the type to which the pixel belongs. here I check the color of the pixel and assign it a value accordingly
-                    if (mask_channels == mask_color_type_1).all():
-                        mod_img[height][width] = 3
-                    elif (mask_channels == mask_color_type_2).all():
-                        mod_img[height][width] = 4
-                    # elif (mask_channels == mask_color_type_3).all():
-                    #     # mod_img[height][width] = 3
-                    else:
-                        mod_img[height][width] = 0
+        # Create an empty single-channel mask
+        mod_img = np.zeros((npa.shape[0], npa.shape[1]), dtype=np.uint8)
+
+        # Vectorized comparison for mask_color_type_1
+        mask_1 = np.all(npa == mask_color_type_1, axis=-1)
+        mod_img[mask_1] = 3
+
+        # Vectorized comparison for mask_color_type_2
+        mask_2 = np.all(npa == mask_color_type_2, axis=-1)
+        mod_img[mask_2] = 4
+
+        # Any other pixel remains 0
     elif npa.ndim == 2:
-        # if the image is already single channel
+        # If the image is already single channel
         mod_img = npa
     else:
-        raise ValueError("Image is not 2D or 3D. Please check the image format. Number of dimensions: ", npa.ndim)
+        raise ValueError("Image is not 2D or 3D. Please check the image format.")
+    
     return mod_img
-            
 
-def process_masks_multithread(load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2):
+
+def process_single_mask(filepath, load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2):
+    """
+    Processes a single mask file: converts it to single-channel and saves it.
+    """
+    try:
+        savepath = os.path.join(save_folderpath, filepath)
+        if os.path.exists(savepath):
+            print(f"File {savepath} already exists. Skipping.")
+            return
+
+        image = Image.open(os.path.join(load_folderpath, filepath))
+        npa = np.array(image)
+        mod_img = get_mod_mask(npa, mask_color_type_1, mask_color_type_2)
+        utils.lblsave(savepath, mod_img)
+    except Exception as e:
+        print(f"Error processing {filepath}: {e}")
+
+def process_wrapper(args):
+    """
+    Wrapper function for multiprocessing to handle arguments.
+    """
+    filepath, load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2 = args
+    process_single_mask(filepath, load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2)
+
+
+def process_masks_multiprocessing(load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2):
+    """
+    Processes all masks in the folder using multiprocessing for faster execution.
+    """
     # Create the save folder if it doesn't exist
     if not os.path.exists(save_folderpath):
         os.makedirs(save_folderpath)
@@ -47,64 +74,38 @@ def process_masks_multithread(load_folderpath, save_folderpath, mask_color_type_
     multichannel_mask_names = os.listdir(load_folderpath)
     print(f"There are {len(multichannel_mask_names)} masks to convert. Processing:")
 
-    # Adjust the number of threads to leave some CPU cores available for other processes
-    max_workers = max(1, multiprocessing.cpu_count() - 10) # leave 10 cores free
+    # Prepare arguments for the wrapper function
+    args = [
+        (filepath, load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2)
+        for filepath in multichannel_mask_names
+    ]
 
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(process_single_mask, filepath, load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2): filepath for filepath in multichannel_mask_names}
-        for future in tqdm(as_completed(futures), total=len(futures)):
-            filepath = futures[future]
-            try:
-                future.result()
-            except Exception as exc:
-                print(f"{filepath} generated an exception: {exc}")
+    # Use multiprocessing Pool
+    with Pool(processes=multiprocessing.cpu_count() - 2) as pool:  # Leave 2 cores free
+        list(tqdm(pool.imap(process_wrapper, args), total=len(multichannel_mask_names)))
 
     print(f"Saved masks to {save_folderpath}")
 
-def process_single_mask(filepath, load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2):
-    savepath = save_folderpath + filepath
-    if os.path.exists(savepath):
-        print(f"File {savepath} already exists. Skipping.")
-        return
-
-    image = Image.open(load_folderpath + filepath)
-    npa = np.array(image)
-    mod_img = get_mod_mask(npa, mask_color_type_1, mask_color_type_2)
-    utils.lblsave(savepath, mod_img)
-    print("Saved mask to", savepath)
-
-def process_masks(load_folderpath, save_folderpath):
-    multichannel_mask_names = os.listdir(load_folderpath)
-    
-    print("There are "+str(len(multichannel_mask_names))+" to convert. Processing:")
-    # load all masks
-    for filepath in tqdm(multichannel_mask_names, total=len(multichannel_mask_names)):
-        image = Image.open(load_folderpath+filepath)
-        npa = np.array(image)
-        mod_img = get_mod_mask(npa)
-        savepath = save_folderpath+filepath
-        utils.lblsave(savepath, mod_img)
-    
-    print("Saved masks to", save_folderpath)
 
 def printimg(im):
+    """
+    Prints detailed information about an image, including its shape, dtype, and unique values.
+    """
     print("Image shape: ", im.shape)
     print("Image dtype: ", im.dtype)
     print("Image min value: ", np.min(im))
     print("Image max value: ", np.max(im))
-    print("Number of dimensions: ", im.ndim)
-    print("dimension of each pixel value: ", im[0, 0].shape)
+    print("dimension of each value: ", im[0, 0].shape if im.ndim == 3 else "N/A")
     print("total number of pixels: ", im.size)
 
     # Check if the image is RGB or BGR
     if im.ndim == 3:  # For RGB/BGR images
-        #print("Checking if the image is RGB or BGR...")
         if (im[0, 0, 0] > im[0, 0, 2]):  # Compare the first pixel's Red and Blue channels
             print("The image is likely in BGR format.")
         else:
             print("The image is likely in RGB format.")
     
-    # full unique values at each pixel
+    # Print unique values
     if im.ndim == 3:  # For RGB images
         unique_colors = np.unique(im.reshape(-1, im.shape[2]), axis=0)
         print("Unique colors in the image (RGB):")
@@ -113,18 +114,15 @@ def printimg(im):
         unique_values = np.unique(im)
         print("Unique values in the image (single channel):")
         print(unique_values)
-    
-    # print some pixels around the center
-    # center_x = im.shape[0] // 2
-    # center_y = im.shape[1] // 2
-    # print("Image center pixel values: ", im[center_x-100: center_x+100, center_y-100: center_y+100])
 
-
-            
 if __name__ == "__main__":
-    
+    # Input and output folder paths
     load_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna/augmented_colour_masks/"
     save_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna/augmented_class_masks/"
+
+    # Define mask colors
+    mask_color_type_1 = [61, 61, 245]  # Top bologna color
+    mask_color_type_2 = [64, 188, 240]  # Other bologna color
 
     # # mask_color_type_1=[255, 106, 77] # top cheese color - augment first then convert to single channel
     # # mask_color_type_2=[250, 250, 55] # other cheese color - augment first then convert to single channel
@@ -132,20 +130,19 @@ if __name__ == "__main__":
     # mask_color_type_1 = [0, 128, 0] # top cheese color - convert to single channel first then augment
     # mask_color_type_2 = [128, 0, 0] # other cheese color - convert to single channel first then augment
 
-    mask_color_type_1 = [61, 61, 245] # top bologna color - augment first then convert to single channel
-    mask_color_type_2 = [64, 188, 240] # other bologna color - augment first then convert to single channel
-
-
-    # test pixel values
-    # load a random image from load_folderpath
-    # test_image_name = os.listdir(load_folderpath)[99]
+    # Test pixel values
+    # Uncomment to test with a specific image
     # test_image_name = "randbc1_006667.png"
-    # test_image_path = load_folderpath + test_image_name
-    # print("test image path: ", test_image_path)
+    # test_image_path = os.path.join(load_folderpath, test_image_name)
+    # print("Test image path: ", test_image_path)
     # test_image = Image.open(test_image_path)
     # test_image = np.array(test_image)
     # printimg(test_image)
-    # mod_img = get_mod_mask(test_image, mask_color_type_1, mask_color_type_2)
 
-    process_masks_multithread(load_folderpath=load_folderpath, save_folderpath=save_folderpath, mask_color_type_1=mask_color_type_1, mask_color_type_2=mask_color_type_2)   
-    
+    # Process all masks using multiprocessing
+    process_masks_multiprocessing(
+        load_folderpath=load_folderpath,
+        save_folderpath=save_folderpath,
+        mask_color_type_1=mask_color_type_1,
+        mask_color_type_2=mask_color_type_2
+    )
