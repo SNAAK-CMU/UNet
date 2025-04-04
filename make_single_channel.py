@@ -18,9 +18,9 @@ def get_mod_mask(npa, mask_color_type_1=None, mask_color_type_2=None):
                 for _ in range(mask_channels.shape[0]):
                     # making the value of each pixel of the image is the type to which the pixel belongs. here I check the color of the pixel and assign it a value accordingly
                     if (mask_channels == mask_color_type_1).all():
-                        mod_img[height][width] = 1
+                        mod_img[height][width] = 3
                     elif (mask_channels == mask_color_type_2).all():
-                        mod_img[height][width] = 2
+                        mod_img[height][width] = 4
                     # elif (mask_channels == mask_color_type_3).all():
                     #     # mod_img[height][width] = 3
                     else:
@@ -121,24 +121,29 @@ def printimg(im):
             
 if __name__ == "__main__":
     
-    load_folderpath = "/home/snaak/Documents/datasets/cheese/multiingredient_cheese_pickup/augmented_color_masks_new/"
-    # save_folderpath = "/home/snaak/Documents/datasets/cheese/multiingredient_cheese_pickup/augmented_class_masks_new/"
+    load_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna/augmented_color_masks/"
+    save_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna/augmented_class_masks/"
 
-    # test pixel values
-    # load a random image from load_folderpath
-    # test_image_name = os.listdir(load_folderpath)[99]
-    test_image_name = "image_20250322-170132.png"
-    test_image_path = load_folderpath + test_image_name
-    print("test image path: ", test_image_path)
-    test_image = Image.open(test_image_path)
-    test_image = np.array(test_image)
-    printimg(test_image)
+    # # test pixel values
+    # # load a random image from load_folderpath
+    # # test_image_name = os.listdir(load_folderpath)[99]
+    # test_image_name = "image_20250322-170132.png"
+    # test_image_path = load_folderpath + test_image_name
+    # print("test image path: ", test_image_path)
+    # test_image = Image.open(test_image_path)
+    # test_image = np.array(test_image)
+    # printimg(test_image)
 
-    # mask_color_type_1=[255, 106, 77] # top cheese color - augment first then convert to single channel
-    # mask_color_type_2=[250, 250, 55] # other cheese color - augment first then convert to single channel
+    # # mask_color_type_1=[255, 106, 77] # top cheese color - augment first then convert to single channel
+    # # mask_color_type_2=[250, 250, 55] # other cheese color - augment first then convert to single channel
     
-    mask_color_type_1 = [0, 128, 0] # top cheese color - convert to single channel first then augment
-    mask_color_type_2 = [128, 0, 0] # other cheese color - convert to single channel first then augment
+    # mask_color_type_1 = [0, 128, 0] # top cheese color - convert to single channel first then augment
+    # mask_color_type_2 = [128, 0, 0] # other cheese color - convert to single channel first then augment
 
-    # process_masks_multithread(load_folderpath=load_folderpath, save_folderpath=save_folderpath, mask_color_type_1=mask_color_type_1, mask_color_type_2=mask_color_type_2)   
+    mask_color_type_1 = [61, 61, 245] # top bologna color - augment first then convert to single channel
+    mask_color_type_2 = [64, 188, 240] # other bologna color - augment first then convert to single channel
+
+
+
+    process_masks_multithread(load_folderpath=load_folderpath, save_folderpath=save_folderpath, mask_color_type_1=mask_color_type_1, mask_color_type_2=mask_color_type_2)   
     
