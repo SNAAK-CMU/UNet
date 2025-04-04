@@ -9,7 +9,9 @@ import multiprocessing
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def get_mod_mask(npa, mask_color_type_1=None, mask_color_type_2=None):
+    #print("Number of dimensions: ", npa.ndim)
     if npa.ndim == 3:
+        #print("Image is 3D. Converting to single channel...")
         mod_img = np.zeros([np.shape(npa)[0], np.shape(npa)[1]])
         for height in range(npa.shape[0]):
             for width in range(npa.shape[1]):
@@ -25,12 +27,11 @@ def get_mod_mask(npa, mask_color_type_1=None, mask_color_type_2=None):
                     #     # mod_img[height][width] = 3
                     else:
                         mod_img[height][width] = 0
-    if npa.ndim == 2:
+    elif npa.ndim == 2:
         # if the image is already single channel
         mod_img = npa
     else:
-        raise ValueError("Image is not 2D or 3D. Please check the image format.")
-    
+        raise ValueError("Image is not 2D or 3D. Please check the image format. Number of dimensions: ", npa.ndim)
     return mod_img
             
 
@@ -91,7 +92,8 @@ def printimg(im):
     print("Image dtype: ", im.dtype)
     print("Image min value: ", np.min(im))
     print("Image max value: ", np.max(im))
-    print("dimension of each value: ", im[0, 0].shape)
+    print("Number of dimensions: ", im.ndim)
+    print("dimension of each pixel value: ", im[0, 0].shape)
     print("total number of pixels: ", im.size)
 
     # Check if the image is RGB or BGR
@@ -121,18 +123,8 @@ def printimg(im):
             
 if __name__ == "__main__":
     
-    load_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna/augmented_color_masks/"
+    load_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna/augmented_colour_masks/"
     save_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna/augmented_class_masks/"
-
-    # # test pixel values
-    # # load a random image from load_folderpath
-    # # test_image_name = os.listdir(load_folderpath)[99]
-    # test_image_name = "image_20250322-170132.png"
-    # test_image_path = load_folderpath + test_image_name
-    # print("test image path: ", test_image_path)
-    # test_image = Image.open(test_image_path)
-    # test_image = np.array(test_image)
-    # printimg(test_image)
 
     # # mask_color_type_1=[255, 106, 77] # top cheese color - augment first then convert to single channel
     # # mask_color_type_2=[250, 250, 55] # other cheese color - augment first then convert to single channel
@@ -144,6 +136,16 @@ if __name__ == "__main__":
     mask_color_type_2 = [64, 188, 240] # other bologna color - augment first then convert to single channel
 
 
+    # test pixel values
+    # load a random image from load_folderpath
+    # test_image_name = os.listdir(load_folderpath)[99]
+    # test_image_name = "randbc1_006667.png"
+    # test_image_path = load_folderpath + test_image_name
+    # print("test image path: ", test_image_path)
+    # test_image = Image.open(test_image_path)
+    # test_image = np.array(test_image)
+    # printimg(test_image)
+    # mod_img = get_mod_mask(test_image, mask_color_type_1, mask_color_type_2)
 
     process_masks_multithread(load_folderpath=load_folderpath, save_folderpath=save_folderpath, mask_color_type_1=mask_color_type_1, mask_color_type_2=mask_color_type_2)   
     
