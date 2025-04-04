@@ -38,7 +38,16 @@ class Ingredients_UNet(Unet):
     def get_top_layer_binary(self, image, top_layer_rgb):
         top_layer_mask = np.array(self.get_top_layer(image, top_layer_rgb))
         binary_mask = Image.fromarray(self.img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
-        return binary_mask
+        # find contour with max area
+        contours, _ = cv2.findContours(np.array(binary_mask), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        max_contour = max(contours, key=cv2.contourArea)
+        # create a mask for the largest contour
+        max_contour_mask = np.zeros_like(np.array(binary_mask))
+        cv2.drawContours(max_contour_mask, [max_contour], -1, (255), thickness=cv2.FILLED)
+        # create a binary mask
+        max_contour_binary_mask = np.zeros_like(np.array(binary_mask))
+        max_contour_binary_mask[max_contour_mask == 255] = 255
+        return binary_mask, max_contour_binary_mask
 
 if __name__ == "__main__":
     # Test initialisation for cheese
@@ -71,7 +80,7 @@ if __name__ == "__main__":
 
     # top_layer_mask = Cheese_UNet.get_top_layer(np.array(r_image), [250, 250, 55])
     # binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
-    binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
+    binary_mask, max_contour_binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
     binary_mask.show("Binary Top Layer Mask")
 
     # binary_mask_edges, cont = img_utils.find_edges_in_binary_image(np.array(binary_mask))
