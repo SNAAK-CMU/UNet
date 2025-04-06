@@ -40,6 +40,14 @@ class Ingredients_UNet(Unet):
         binary_mask = Image.fromarray(self.img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
         # find contour with max area
         contours, _ = cv2.findContours(np.array(binary_mask), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if len(contours) == 0:
+            print("No contours found")
+            # return black image
+            binary_mask = np.zeros_like(np.array(binary_mask))
+            max_contour_binary_mask = np.zeros_like(np.array(binary_mask))
+            return binary_mask, max_contour_binary_mask
+            
         max_contour = max(contours, key=cv2.contourArea)
         # create a mask for the largest contour
         max_contour_mask = np.zeros_like(np.array(binary_mask))
@@ -57,7 +65,9 @@ if __name__ == "__main__":
 
     # for directory
     load_directory = "/home/snaak/Documents/data/BOL_images_040525_2/"
-    save_directory = "/home/snaak/Documents/data/BOL_images_040525_2/pred_masks_unet/"
+    save_directory = "/home/snaak/Documents/data/BOL_images_040525_2/pred_masks_unet_dice_focal/"
+    binary_save_directory = "/home/snaak/Documents/data/BOL_images_040525_2/pred_masks_unet_dice_focal/binary_masks/"
+    
     img_names = os.listdir(load_directory)
     for img_name in tqdm(img_names):
         if img_name.lower().endswith(('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.pbm', '.pgm', '.ppm', '.tif', '.tiff')):
@@ -70,10 +80,20 @@ if __name__ == "__main__":
             # top_layer_mask = Cheese_UNet.get_top_layer(np.array(r_image), [250, 250, 55])
             # binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
             # binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
+            binary_mask, max_contour_binary_mask = Ham_UNet.get_top_layer_binary(image, [61, 61, 245])
             if not os.path.exists(save_directory):
                 os.makedirs(save_directory)
             # r_image.save(os.path.join(save_directory, img_name))
             r_image.save(os.path.join(save_directory, img_name))
+            if not os.path.exists(binary_save_directory):
+                os.makedirs(binary_save_directory)
+            if max_contour_binary_mask is not None:
+                max_contour_binary_mask = Image.fromarray(max_contour_binary_mask)
+                max_contour_binary_mask.save(os.path.join(binary_save_directory, img_name))
+            else:
+                # save black image
+                max_contour_binary_mask = Image.fromarray(np.zeros_like(np.array(image)))
+                max_contour_binary_mask.save(os.path.join(binary_save_directory, img_name))
 
 
     # for image
