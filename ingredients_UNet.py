@@ -51,37 +51,39 @@ class Ingredients_UNet(Unet):
 
 if __name__ == "__main__":
     # Test initialisation for cheese
-    Cheese_UNet = Ingredients_UNet(count=False, classes=["background","top_cheese","other_cheese"], model_path="logs/cheese/best_epoch_weights.pth", mix_type=1)
+    #Cheese_UNet = Ingredients_UNet(count=False, classes=["background","top_cheese","other_cheese"], model_path="logs/cheese/best_epoch_weights.pth", mix_type=1, num_classes=3)  
+    Ham_UNet = Ingredients_UNet(count=False, classes=["background","top_ham","other_ham"], model_path="logs/ham/multiingredient_bologna/best_epoch_weights.pth", mix_type=1, num_classes=5)        
     img_utils = ImageUtils()
 
-    # # for directory
-    # load_directory = "/home/snaak/Documents/data/CHE_images_032425/"
-    # save_directory = "/home/snaak/Documents/data/CHE_images_032425/pred_binary_masks_new/"
-    # img_names = os.listdir(load_directory)
-    # for img_name in tqdm(img_names):
-    #     if img_name.lower().endswith(('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.pbm', '.pgm', '.ppm', '.tif', '.tiff')):
-    #         image_path  = os.path.join(load_directory, img_name)
-    #         image       = Image.open(image_path)
-    #         print("Opened Image:", image_path)
-    #         # r_image     = Cheese_UNet.detect_image(image)
+    # for directory
+    load_directory = "/home/snaak/Documents/data/BOL_images_040525_2/"
+    save_directory = "/home/snaak/Documents/data/BOL_images_040525_2/pred_masks_unet/"
+    img_names = os.listdir(load_directory)
+    for img_name in tqdm(img_names):
+        if img_name.lower().endswith(('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.pbm', '.pgm', '.ppm', '.tif', '.tiff')):
+            image_path  = os.path.join(load_directory, img_name)
+            image       = Image.open(image_path)
+            print("Opened Image:", image_path)
+            r_image     = Ham_UNet.detect_image(image)
+            #r_image     = Cheese_UNet.detect_image(image)
 
-    #         # top_layer_mask = Cheese_UNet.get_top_layer(np.array(r_image), [250, 250, 55])
-    #         # binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
-    #         binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
-    #         if not os.path.exists(save_directory):
-    #             os.makedirs(save_directory)
-    #         # r_image.save(os.path.join(save_directory, img_name))
-    #         binary_mask.save(os.path.join(save_directory, img_name))
+            # top_layer_mask = Cheese_UNet.get_top_layer(np.array(r_image), [250, 250, 55])
+            # binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
+            # binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
+            if not os.path.exists(save_directory):
+                os.makedirs(save_directory)
+            # r_image.save(os.path.join(save_directory, img_name))
+            r_image.save(os.path.join(save_directory, img_name))
 
 
     # for image
-    image = Image.open("/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/cheese_input_image.jpg")
-    # r_image     = Cheese_UNet.detect_image(image)
+    # image = Image.open("/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/cheese_input_image.jpg")
+    # # r_image     = Cheese_UNet.detect_image(image)
 
-    # top_layer_mask = Cheese_UNet.get_top_layer(np.array(r_image), [250, 250, 55])
-    # binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
-    binary_mask, max_contour_binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
-    binary_mask.show("Binary Top Layer Mask")
+    # # top_layer_mask = Cheese_UNet.get_top_layer(np.array(r_image), [250, 250, 55])
+    # # binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
+    # binary_mask, max_contour_binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
+    # binary_mask.show("Binary Top Layer Mask")
 
     # binary_mask_edges, cont = img_utils.find_edges_in_binary_image(np.array(binary_mask))
     # # print(cont)
