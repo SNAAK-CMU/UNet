@@ -18,11 +18,11 @@ def get_mod_mask(npa, mask_color_type_1=None, mask_color_type_2=None):
 
         # Vectorized comparison for mask_color_type_1
         mask_1 = np.all(npa == mask_color_type_1, axis=-1)
-        mod_img[mask_1] = 3
+        mod_img[mask_1] = 1
 
         # Vectorized comparison for mask_color_type_2
         mask_2 = np.all(npa == mask_color_type_2, axis=-1)
-        mod_img[mask_2] = 4
+        mod_img[mask_2] = 2
 
         # Any other pixel remains 0
     elif npa.ndim == 2:
@@ -81,7 +81,7 @@ def process_masks_multiprocessing(load_folderpath, save_folderpath, mask_color_t
     ]
 
     # Use multiprocessing Pool
-    with Pool(processes=multiprocessing.cpu_count() - 2) as pool:  # Leave 2 cores free
+    with Pool(processes=multiprocessing.cpu_count() - 10) as pool:  # Leave 2 cores free
         list(tqdm(pool.imap(process_wrapper, args), total=len(multichannel_mask_names)))
 
     print(f"Saved masks to {save_folderpath}")
@@ -117,18 +117,16 @@ def printimg(im):
 
 if __name__ == "__main__":
     # Input and output folder paths
-    load_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna/augmented_colour_masks/"
-    save_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna/augmented_class_masks/"
+    load_folderpath = "/home/snaak/Documents/datasets/cheese/cheese_check/augmented_color_masks"
+    save_folderpath = "/home/snaak/Documents/datasets/cheese/cheese_check/masks/"
 
     # Define mask colors
-    mask_color_type_1 = [61, 61, 245]  # Top bologna color
-    mask_color_type_2 = [64, 188, 240]  # Other bologna color
+    # mask_color_type_1 = [61, 61, 245]  # Top bologna color
+    # mask_color_type_2 = [64, 188, 240]  # Other bologna color
 
-    # # mask_color_type_1=[255, 106, 77] # top cheese color - augment first then convert to single channel
-    # # mask_color_type_2=[250, 250, 55] # other cheese color - augment first then convert to single channel
-    
-    # mask_color_type_1 = [0, 128, 0] # top cheese color - convert to single channel first then augment
-    # mask_color_type_2 = [128, 0, 0] # other cheese color - convert to single channel first then augment
+    mask_color_type_1=[250, 50, 83] # top cheese color - augment first then convert to single channel
+    mask_color_type_2=[61, 61, 245] # other cheese color - augment first then convert to single channel
+
 
     # Test pixel values
     # Uncomment to test with a specific image
