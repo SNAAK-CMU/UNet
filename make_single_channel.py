@@ -118,14 +118,19 @@ def printimg(im):
 if __name__ == "__main__":
     # Input and output folder paths
     load_folderpath = "/home/snaak/Documents/datasets/cheese/cheese_check/augmented_color_masks"
-    save_folderpath = "/home/snaak/Documents/datasets/cheese/cheese_check/masks/"
+    save_folderpath = "/home/snaak/Documents/datasets/cheese/cheese_check/augmented_png_class_masks"
 
     # Define mask colors
     # mask_color_type_1 = [61, 61, 245]  # Top bologna color
     # mask_color_type_2 = [64, 188, 240]  # Other bologna color
 
-    mask_color_type_1=[250, 50, 83] # top cheese color - augment first then convert to single channel
-    mask_color_type_2=[61, 61, 245] # other cheese color - augment first then convert to single channel
+    # for sandwich check images
+    mask_color_type_2=[250, 50, 83] # top cheese color - augment first then convert to single channel
+    mask_color_type_1=[61, 61, 245] # other cheese color - augment first then convert to single channel
+    
+    # for ingredient pickup images
+#     mask_color_type_1=[255, 106, 77] # top cheese color - augment first then convert to single channel
+# +   mask_color_type_2=[250, 250, 55] # other cheese color - augment first then convert to single channel
 
 
     # Test pixel values
