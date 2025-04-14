@@ -98,8 +98,8 @@ if __name__ == "__main__":
     cheese_width = CHEESE_WIDTH
     cheese_height = CHEESE_HEIGHT
     ham_radius = HAM_RADIUS
-    cheese_area_pixels = cheese_width * cheese_height * pixels_to_m**2
-    ham_area_pixels = np.pi * (ham_radius**2) * pixels_to_m**2
+    cheese_area_pixels = cheese_width * cheese_height * (1 / pixels_to_m**2)
+    ham_area_pixels = np.pi * (ham_radius**2) * (1 / pixels_to_m**2)
 
     # Test initialisation for cheese
     Cheese_UNet = Ingredients_UNet(
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     # for directory
     load_directory = "/home/snaak/Documents/data/testsets/CHE_images_041425_1_T/"
     save_directory = "/home/snaak/Documents/data/testsets/CHE_images_041425_1_T/cheese_check_model/pred_masks/"
-    binary_save_directory = "/home/snaak/Documents/data/CHE_images_041425/cheese_check_model/pred_binary_masks/"
+    binary_save_directory = "/home/snaak/Documents/data/testsets/CHE_images_041425_1_T/cheese_check_model/pred_binary_masks/"
 
     img_names = os.listdir(load_directory)
     for img_name in tqdm(img_names):
@@ -143,7 +143,7 @@ if __name__ == "__main__":
             # binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
             # binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
             # binary_mask, max_contour_binary_mask = Ham_UNet.get_top_layer_binary(image, [61, 61, 245])
-            binary_mask, max_contour_binary_mask, max_contour_mask = (
+            binary_mask, max_contour_binary_mask, max_contour_area = (
                 Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
             )
 
@@ -152,18 +152,18 @@ if __name__ == "__main__":
                 #     f"Cheese area is too large: {max_contour_area} > {cheese_area_pixels}, cropping out bottom 25% of bin and trying again..."
                 # )
 
-                # crop out bottom 25% of the bin
-                bin_mask = np.zeros_like(unet_input_image)
+                # crop out bottom 33% of the bin
+                bin_mask = np.zeros_like(np.array(image))
                 bin_mask[
                     CHEESE_BIN_YMIN : CHEESE_BIN_YMAX
-                    - (CHEESE_BIN_YMAX - CHEESE_BIN_YMIN) // 4,
+                    - (CHEESE_BIN_YMAX - CHEESE_BIN_YMIN) // 3,
                     CHEESE_BIN_XMIN:CHEESE_BIN_XMAX,
                 ] = 255
-                unet_input_image = cv2.bitwise_and(bin_mask, unet_input_image)
+                image = cv2.bitwise_and(bin_mask, np.array(image))
 
-                mask, max_contour_mask, max_contour_area = (
+                mask, max_contour_binary_mask, max_contour_area = (
                     Cheese_UNet.get_top_layer_binary(
-                        Im.fromarray(unet_input_image), [250, 250, 55]
+                        Im.fromarray(image), [250, 250, 55]
                     )
                 )
 
@@ -175,14 +175,17 @@ if __name__ == "__main__":
                     #     f"Cheese area after 75% crop is still too large: {max_contour_area} > {self.cheese_area_pixels}"
                     # )
                     print(
-                        f"Cheese area after 75% crop is still too large: {max_contour_area} > {cheese_area_pixels}"
+                        f"Cheese area after 66% crop is still too large: {max_contour_area} > {cheese_area_pixels}"
                     )
-                    continue
+                    
+                    max_contour_binary_mask = np.zeros_like(np.array(image))
 
-            if not os.path.exists(save_directory):
-                os.makedirs(save_directory)
+            # save mask
+            # if not os.path.exists(save_directory):
+            #     os.makedirs(save_directory)
             # r_image.save(os.path.join(save_directory, img_name))
-            # r_image.save(os.path.join(save_directory, img_name))
+
+            # save binary mask
             if not os.path.exists(binary_save_directory):
                 os.makedirs(binary_save_directory)
             if max_contour_binary_mask is not None:
