@@ -49,38 +49,42 @@ class Ingredients_UNet(Unet):
             return binary_mask, max_contour_binary_mask
             
         max_contour = max(contours, key=cv2.contourArea)
+        
         # create a mask for the largest contour
         max_contour_mask = np.zeros_like(np.array(binary_mask))
         cv2.drawContours(max_contour_mask, [max_contour], -1, (255), thickness=cv2.FILLED)
         # create a binary mask
         max_contour_binary_mask = np.zeros_like(np.array(binary_mask))
         max_contour_binary_mask[max_contour_mask == 255] = 255
+        
+        
         return binary_mask, max_contour_binary_mask
 
 if __name__ == "__main__":
     # Test initialisation for cheese
-    #Cheese_UNet = Ingredients_UNet(count=False, classes=["background","top_cheese","other_cheese"], model_path="logs/cheese/best_epoch_weights.pth", mix_type=1, num_classes=3)  
-    Ham_UNet = Ingredients_UNet(count=False, classes=["background","top_ham","other_ham"], model_path="logs/ham/multiingredient_bologna/best_epoch_weights.pth", mix_type=1, num_classes=5)        
+    Cheese_UNet = Ingredients_UNet(count=False, classes=["background","top_cheese","other_cheese"], model_path="logs/cheese/cheese_check/best_epoch_weights.pth", mix_type=1, num_classes=3)  
+    #Ham_UNet = Ingredients_UNet(count=False, classes=["background","top_ham","other_ham"], model_path="logs/ham/multiingredient_bologna/best_epoch_weights.pth", mix_type=0, num_classes=5)        
     img_utils = ImageUtils()
 
     # for directory
-    load_directory = "/home/snaak/Documents/data/BOL_images_040525_2/"
-    save_directory = "/home/snaak/Documents/data/BOL_images_040525_2/pred_masks_unet_dice_focal/"
-    binary_save_directory = "/home/snaak/Documents/data/BOL_images_040525_2/pred_masks_unet_dice_focal/binary_masks/"
+    load_directory = "/home/snaak/Documents/data/testsets/CHE_images_041425_1_T/"
+    save_directory = "/home/snaak/Documents/data/testsets/CHE_images_041425_1_T/cheese_check_model/pred_masks/"
+    binary_save_directory = "/home/snaak/Documents/data/CHE_images_041425/cheese_check_model/pred_binary_masks/"
     
     img_names = os.listdir(load_directory)
     for img_name in tqdm(img_names):
         if img_name.lower().endswith(('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.pbm', '.pgm', '.ppm', '.tif', '.tiff')):
             image_path  = os.path.join(load_directory, img_name)
             image       = Image.open(image_path)
-            print("Opened Image:", image_path)
-            r_image     = Ham_UNet.detect_image(image)
-            #r_image     = Cheese_UNet.detect_image(image)
+            #print("Opened Image:", image_path)
+            #r_image     = Ham_UNet.detect_image(image)
+            r_image     = Cheese_UNet.detect_image(image)
 
             # top_layer_mask = Cheese_UNet.get_top_layer(np.array(r_image), [250, 250, 55])
             # binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
             # binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
-            binary_mask, max_contour_binary_mask = Ham_UNet.get_top_layer_binary(image, [61, 61, 245])
+            #binary_mask, max_contour_binary_mask = Ham_UNet.get_top_layer_binary(image, [61, 61, 245])
+            binary_mask, max_contour_binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
             if not os.path.exists(save_directory):
                 os.makedirs(save_directory)
             # r_image.save(os.path.join(save_directory, img_name))
