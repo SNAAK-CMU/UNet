@@ -9,14 +9,38 @@ import sys
 import os
 
 # # Get the absolute path of the parent directory
-current_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-    
+current_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "."))
+
 # # Add the parent directory to sys.path
 sys.path.append(current_dir)
 
 from unet import Unet
+
 # from post_processing.image_utlis import ImageUtils
 from img_utils import ImageUtils
+from PIL import Image as Im
+
+FOV_WIDTH = 0.775  # metres
+FOV_HEIGHT = 0.435  # metres
+SW_CHECKER_THRESHOLD = 3  # cm
+
+IMG_WIDTH = 848
+IMG_HEIGHT = 480
+
+# Cheese Dimensions in metres
+CHEESE_WIDTH = 0.090
+CHEESE_HEIGHT = 0.095
+
+# Cheese bin coords
+CHEESE_BIN_XMIN = 250
+CHEESE_BIN_YMIN = 0
+CHEESE_BIN_XMAX = 470
+CHEESE_BIN_YMAX = 340
+
+# Ham Dimensions in metres
+# 1098 pix/m ; ham_radius = 52 pix
+HAM_RADIUS = 0.05  # metres
+
 
 class Ingredients_UNet(Unet):
     def __init__(self, **kwargs):
@@ -24,81 +48,156 @@ class Ingredients_UNet(Unet):
         self.img_utils = ImageUtils()
 
     def get_top_layer(self, image, top_layer_rgb):
-        mask = np.array(self.detect_image(image)) # TODO: change this in parent class to assign class ID to pixels instead of RGB
-        mod_img = np.zeros(
-            [np.shape(mask)[0], np.shape(mask)[1], np.shape(mask)[2]]
-        )
+        mask = np.array(
+            self.detect_image(image)
+        )  # TODO: change this in parent class to assign class ID to pixels instead of RGB
+        mod_img = np.zeros([np.shape(mask)[0], np.shape(mask)[1], np.shape(mask)[2]])
         if mask.ndim == 3:
             for height in range(mask.shape[0]):
                 for width in range(mask.shape[1]):
-                    if (mask[height][width] == top_layer_rgb).all(): 
-                      mod_img[height][width] = mask[height][width][0]
+                    if (mask[height][width] == top_layer_rgb).all():
+                        mod_img[height][width] = mask[height][width][0]
         return Image.fromarray(np.uint8(mod_img))
 
     def get_top_layer_binary(self, image, top_layer_rgb):
         top_layer_mask = np.array(self.get_top_layer(image, top_layer_rgb))
-        binary_mask = Image.fromarray(self.img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
+        binary_mask = Image.fromarray(
+            self.img_utils.binarize_image(masked_img=np.array(top_layer_mask))
+        )
         # find contour with max area
-        contours, _ = cv2.findContours(np.array(binary_mask), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
+        contours, _ = cv2.findContours(
+            np.array(binary_mask), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
+
         if len(contours) == 0:
             print("No contours found")
             # return black image
             binary_mask = np.zeros_like(np.array(binary_mask))
             max_contour_binary_mask = np.zeros_like(np.array(binary_mask))
             return binary_mask, max_contour_binary_mask
-            
+
         max_contour = max(contours, key=cv2.contourArea)
-        
+
         # create a mask for the largest contour
         max_contour_mask = np.zeros_like(np.array(binary_mask))
-        cv2.drawContours(max_contour_mask, [max_contour], -1, (255), thickness=cv2.FILLED)
+        cv2.drawContours(
+            max_contour_mask, [max_contour], -1, (255), thickness=cv2.FILLED
+        )
         # create a binary mask
         max_contour_binary_mask = np.zeros_like(np.array(binary_mask))
         max_contour_binary_mask[max_contour_mask == 255] = 255
-        
-        
-        return binary_mask, max_contour_binary_mask
+        return binary_mask, max_contour_binary_mask, cv2.contourArea(max_contour)
+
 
 if __name__ == "__main__":
+
+    # pixels to metres
+    pixels_to_m = ((FOV_WIDTH / IMG_WIDTH) + (FOV_HEIGHT / IMG_HEIGHT)) / 2
+
+    # ingredient dimensions
+    cheese_width = CHEESE_WIDTH
+    cheese_height = CHEESE_HEIGHT
+    ham_radius = HAM_RADIUS
+    cheese_area_pixels = cheese_width * cheese_height * pixels_to_m**2
+    ham_area_pixels = np.pi * (ham_radius**2) * pixels_to_m**2
+
     # Test initialisation for cheese
-    Cheese_UNet = Ingredients_UNet(count=False, classes=["background","top_cheese","other_cheese"], model_path="logs/cheese/cheese_check/best_epoch_weights.pth", mix_type=1, num_classes=3)  
-    #Ham_UNet = Ingredients_UNet(count=False, classes=["background","top_ham","other_ham"], model_path="logs/ham/multiingredient_bologna/best_epoch_weights.pth", mix_type=0, num_classes=5)        
+    Cheese_UNet = Ingredients_UNet(
+        count=False,
+        classes=["background", "top_cheese", "other_cheese"],
+        model_path="logs/cheese/cheese_check/best_epoch_weights.pth",
+        mix_type=1,
+        num_classes=3,
+    )
+    # Ham_UNet = Ingredients_UNet(count=False, classes=["background","top_ham","other_ham"], model_path="logs/ham/multiingredient_bologna/best_epoch_weights.pth", mix_type=0, num_classes=5)
     img_utils = ImageUtils()
 
     # for directory
     load_directory = "/home/snaak/Documents/data/testsets/CHE_images_041425_1_T/"
     save_directory = "/home/snaak/Documents/data/testsets/CHE_images_041425_1_T/cheese_check_model/pred_masks/"
     binary_save_directory = "/home/snaak/Documents/data/CHE_images_041425/cheese_check_model/pred_binary_masks/"
-    
+
     img_names = os.listdir(load_directory)
     for img_name in tqdm(img_names):
-        if img_name.lower().endswith(('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.pbm', '.pgm', '.ppm', '.tif', '.tiff')):
-            image_path  = os.path.join(load_directory, img_name)
-            image       = Image.open(image_path)
-            #print("Opened Image:", image_path)
-            #r_image     = Ham_UNet.detect_image(image)
-            r_image     = Cheese_UNet.detect_image(image)
+        if img_name.lower().endswith(
+            (
+                ".bmp",
+                ".dib",
+                ".png",
+                ".jpg",
+                ".jpeg",
+                ".pbm",
+                ".pgm",
+                ".ppm",
+                ".tif",
+                ".tiff",
+            )
+        ):
+            image_path = os.path.join(load_directory, img_name)
+            image = Image.open(image_path)
+            # print("Opened Image:", image_path)
+            # r_image     = Ham_UNet.detect_image(image)
+            # r_image     = Cheese_UNet.detect_image(image)
 
             # top_layer_mask = Cheese_UNet.get_top_layer(np.array(r_image), [250, 250, 55])
             # binary_mask = Image.fromarray(img_utils.binarize_image(masked_img=np.array(top_layer_mask)))
             # binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
-            #binary_mask, max_contour_binary_mask = Ham_UNet.get_top_layer_binary(image, [61, 61, 245])
-            binary_mask, max_contour_binary_mask = Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
+            # binary_mask, max_contour_binary_mask = Ham_UNet.get_top_layer_binary(image, [61, 61, 245])
+            binary_mask, max_contour_binary_mask, max_contour_mask = (
+                Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
+            )
+
+            if max_contour_area > 1.5 * cheese_area_pixels:
+                # get_logger().info(
+                #     f"Cheese area is too large: {max_contour_area} > {cheese_area_pixels}, cropping out bottom 25% of bin and trying again..."
+                # )
+
+                # crop out bottom 25% of the bin
+                bin_mask = np.zeros_like(unet_input_image)
+                bin_mask[
+                    CHEESE_BIN_YMIN : CHEESE_BIN_YMAX
+                    - (CHEESE_BIN_YMAX - CHEESE_BIN_YMIN) // 4,
+                    CHEESE_BIN_XMIN:CHEESE_BIN_XMAX,
+                ] = 255
+                unet_input_image = cv2.bitwise_and(bin_mask, unet_input_image)
+
+                mask, max_contour_mask, max_contour_area = (
+                    Cheese_UNet.get_top_layer_binary(
+                        Im.fromarray(unet_input_image), [250, 250, 55]
+                    )
+                )
+
+                if max_contour_area > 1.5 * cheese_area_pixels:
+                    # self.get_logger().info(
+                    #     f"Cheese area is still too large: {max_contour_area} > {cheese_area_pixels}, skipping this image..."
+                    # )
+                    # raise Exception(
+                    #     f"Cheese area after 75% crop is still too large: {max_contour_area} > {self.cheese_area_pixels}"
+                    # )
+                    print(
+                        f"Cheese area after 75% crop is still too large: {max_contour_area} > {cheese_area_pixels}"
+                    )
+                    continue
+
             if not os.path.exists(save_directory):
                 os.makedirs(save_directory)
             # r_image.save(os.path.join(save_directory, img_name))
-            r_image.save(os.path.join(save_directory, img_name))
+            # r_image.save(os.path.join(save_directory, img_name))
             if not os.path.exists(binary_save_directory):
                 os.makedirs(binary_save_directory)
             if max_contour_binary_mask is not None:
                 max_contour_binary_mask = Image.fromarray(max_contour_binary_mask)
-                max_contour_binary_mask.save(os.path.join(binary_save_directory, img_name))
+                max_contour_binary_mask.save(
+                    os.path.join(binary_save_directory, img_name)
+                )
             else:
                 # save black image
-                max_contour_binary_mask = Image.fromarray(np.zeros_like(np.array(image)))
-                max_contour_binary_mask.save(os.path.join(binary_save_directory, img_name))
-
+                max_contour_binary_mask = Image.fromarray(
+                    np.zeros_like(np.array(image))
+                )
+                max_contour_binary_mask.save(
+                    os.path.join(binary_save_directory, img_name)
+                )
 
     # for image
     # image = Image.open("/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/cheese_input_image.jpg")
@@ -119,5 +218,3 @@ if __name__ == "__main__":
     # # binary_mask_edges.show("top layer edges")
     # binary_mask_edges = binary_mask_edges.convert('RGB')
     # binary_mask_edges.save("top_layer_edges_center.png")
-
-    
