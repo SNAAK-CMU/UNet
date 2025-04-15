@@ -113,9 +113,9 @@ if __name__ == "__main__":
     img_utils = ImageUtils()
 
     # for directory
-    load_directory = "/home/snaak/Documents/data/testsets/CHE_images_041425_1_T/"
-    save_directory = "/home/snaak/Documents/data/testsets/CHE_images_041425_1_T/cheese_check_model/pred_masks/"
-    binary_save_directory = "/home/snaak/Documents/data/testsets/CHE_images_041425_1_T/cheese_check_model/pred_binary_masks/"
+    load_directory = "/home/snaak/Documents/datasets/testsets/CHE_images_041425_2_T/"
+    save_directory = "/home/snaak/Documents/datasets/testsets/CHE_images_041425_2_T/cheese_check_model/pred_masks/"
+    binary_save_directory = "/home/snaak/Documents/datasets/testsets/CHE_images_041425_2_T/cheese_check_model/pred_binary_masks/"
 
     img_names = os.listdir(load_directory)
     for img_name in tqdm(img_names):
@@ -147,7 +147,7 @@ if __name__ == "__main__":
                 Cheese_UNet.get_top_layer_binary(image, [250, 250, 55])
             )
 
-            if max_contour_area > 1.5 * cheese_area_pixels:
+            if max_contour_area > 1.2 * cheese_area_pixels:
                 # get_logger().info(
                 #     f"Cheese area is too large: {max_contour_area} > {cheese_area_pixels}, cropping out bottom 25% of bin and trying again..."
                 # )
@@ -156,7 +156,7 @@ if __name__ == "__main__":
                 bin_mask = np.zeros_like(np.array(image))
                 bin_mask[
                     CHEESE_BIN_YMIN : CHEESE_BIN_YMAX
-                    - (CHEESE_BIN_YMAX - CHEESE_BIN_YMIN) // 3,
+                    - (CHEESE_BIN_YMAX - CHEESE_BIN_YMIN) // 2,
                     CHEESE_BIN_XMIN:CHEESE_BIN_XMAX,
                 ] = 255
                 image = cv2.bitwise_and(bin_mask, np.array(image))
@@ -167,7 +167,7 @@ if __name__ == "__main__":
                     )
                 )
 
-                if max_contour_area > 1.5 * cheese_area_pixels:
+                if max_contour_area > 1.2 * cheese_area_pixels:
                     # self.get_logger().info(
                     #     f"Cheese area is still too large: {max_contour_area} > {cheese_area_pixels}, skipping this image..."
                     # )
@@ -175,7 +175,7 @@ if __name__ == "__main__":
                     #     f"Cheese area after 75% crop is still too large: {max_contour_area} > {self.cheese_area_pixels}"
                     # )
                     print(
-                        f"Cheese area after 66% crop is still too large: {max_contour_area} > {cheese_area_pixels}"
+                        f"Cheese area after 50% crop is still too large: {max_contour_area} > {cheese_area_pixels}"
                     )
                     
                     max_contour_binary_mask = np.zeros_like(np.array(image))

@@ -18,11 +18,11 @@ def get_mod_mask(npa, mask_color_type_1=None, mask_color_type_2=None):
 
         # Vectorized comparison for mask_color_type_1
         mask_1 = np.all(npa == mask_color_type_1, axis=-1)
-        mod_img[mask_1] = 1
+        mod_img[mask_1] = 3
 
         # Vectorized comparison for mask_color_type_2
         mask_2 = np.all(npa == mask_color_type_2, axis=-1)
-        mod_img[mask_2] = 2
+        mod_img[mask_2] = 4
 
         # Any other pixel remains 0
     elif npa.ndim == 2:
@@ -117,16 +117,16 @@ def printimg(im):
 
 if __name__ == "__main__":
     # Input and output folder paths
-    load_folderpath = "/home/snaak/Documents/datasets/cheese/cheese_check/augmented_color_masks"
-    save_folderpath = "/home/snaak/Documents/datasets/cheese/cheese_check/augmented_png_class_masks"
+    load_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna_kiosk/og_color_masks"
+    save_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna_kiosk/og_png_class_masks"
 
     # Define mask colors
-    # mask_color_type_1 = [61, 61, 245]  # Top bologna color
-    # mask_color_type_2 = [64, 188, 240]  # Other bologna color
+    mask_color_type_1 = [61, 61, 245]  # Top bologna color
+    mask_color_type_2 = [64, 188, 240]  # Other bologna color
 
     # for sandwich check images
-    mask_color_type_2=[250, 50, 83] # top cheese color - augment first then convert to single channel
-    mask_color_type_1=[61, 61, 245] # other cheese color - augment first then convert to single channel
+    # mask_color_type_2=[250, 50, 83] # top cheese color - augment first then convert to single channel
+    # mask_color_type_1=[61, 61, 245] # other cheese color - augment first then convert to single channel
     
     # for ingredient pickup images
 #     mask_color_type_1=[255, 106, 77] # top cheese color - augment first then convert to single channel

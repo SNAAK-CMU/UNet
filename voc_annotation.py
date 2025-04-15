@@ -17,7 +17,7 @@ train_percent       = 0.72
 # Point to the folder where the VOC data set is located
 # Default points to the VOC data set in the root directory
 #-------------------------------------------------------#
-VOCdevkit_path      = '/home/snaak/Documents/datasets/cheese/cheese_check/'
+VOCdevkit_path      = '/home/snaak/Documents/datasets/bologna/bologna_check/'
 
 if __name__ == "__main__":
     random.seed(0)
