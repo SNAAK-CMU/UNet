@@ -109,26 +109,26 @@ if __name__ == "__main__":
     ham_area_pixels = np.pi * (ham_radius**2) * (1 / pixels_to_m**2)
 
     # initialise model
-    # Cheese_UNet = Ingredients_UNet(
-    #     count=False,
-    #     classes=["background", "top_cheese", "other_cheese"],
-    #     model_path="logs/cheese/cheese_check/best_epoch_weights.pth",
-    #     mix_type=0,
-    #     num_classes=3,
-    # )
-    Ham_UNet = Ingredients_UNet(
+    Cheese_UNet = Ingredients_UNet(
         count=False,
-        classes=["background", "", "", "top_ham", "other_ham"],
-        model_path="logs/ham/bologna_check/best_epoch_weights.pth",
+        classes=["background", "top_cheese", "other_cheese"],
+        model_path="logs/cheese/cheese_check/best_epoch_weights.pth",
         mix_type=0,
-        num_classes=5,
+        num_classes=3,
     )
-    img_utils = ImageUtils()
+    # Ham_UNet = Ingredients_UNet(
+    #     count=False,
+    #     classes=["background", "", "", "top_ham", "other_ham"],
+    #     model_path="logs/ham/bologna_check/best_epoch_weights.pth",
+    #     mix_type=0,
+    #     num_classes=5,
+    # )
+    # img_utils = ImageUtils()
 
     # for directory
-    load_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_2_T/"
-    save_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_2_T/bologna_check_model/pred_masks/"
-    #binary_save_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_2_T/bologna_check_model/pred_binary_masks/"
+    load_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_1_T/"
+    save_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_1_T/multi_cheese_model/pred_masks/"
+    binary_save_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_1_T/multi_cheese_model/pred_binary_masks/"
 
     # test pickup images
     # img_names = os.listdir(load_directory)
@@ -247,19 +247,19 @@ if __name__ == "__main__":
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
 
-            # r_image = Cheese_UNet.detect_image(Im.fromarray(unet_input_image))
-            r_image = Ham_UNet.detect_image(Im.fromarray(unet_input_image))
+            r_image = Cheese_UNet.detect_image(Im.fromarray(unet_input_image))
+            # r_image = Ham_UNet.detect_image(Im.fromarray(unet_input_image))
 
             # cv2.imshow("r_image", np.array(r_image))
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
 
             # Get the cheese mask using UNet
-            # binary_mask, max_contour_binary_mask, max_contour_area = (
-            #     Cheese_UNet.get_top_layer_binary(
-            #         Im.fromarray(unet_input_image), [250, 250, 55]
-            #     )
-            # )
+            binary_mask, max_contour_binary_mask, max_contour_area = (
+                Cheese_UNet.get_top_layer_binary(
+                    Im.fromarray(unet_input_image), [250, 106, 77]
+                )
+            )
             # binary_mask, max_contour_binary_mask, max_contour_area = Ham_UNet.get_top_layer_binary(
             #     Im.fromarray(unet_input_image), [61, 61, 245]
             # )
@@ -270,19 +270,19 @@ if __name__ == "__main__":
             r_image.save(os.path.join(save_directory, img_name))
 
 
-            # # save binary mask
-            # if not os.path.exists(binary_save_directory):
-            #     os.makedirs(binary_save_directory)
-            # if max_contour_binary_mask is not None:
-            #     max_contour_binary_mask = Image.fromarray(max_contour_binary_mask)
-            #     max_contour_binary_mask.save(
-            #         os.path.join(binary_save_directory, img_name)
-            #     )
-            # else:
-            #     # save black image
-            #     max_contour_binary_mask = Image.fromarray(
-            #         np.zeros_like(np.array(image))
-            #     )
-            #     max_contour_binary_mask.save(
-            #         os.path.join(binary_save_directory, img_name)
-            #     )
+            # save binary mask
+            if not os.path.exists(binary_save_directory):
+                os.makedirs(binary_save_directory)
+            if max_contour_binary_mask is not None:
+                max_contour_binary_mask = Image.fromarray(max_contour_binary_mask)
+                max_contour_binary_mask.save(
+                    os.path.join(binary_save_directory, img_name)
+                )
+            else:
+                # save black image
+                max_contour_binary_mask = Image.fromarray(
+                    np.zeros_like(np.array(image))
+                )
+                max_contour_binary_mask.save(
+                    os.path.join(binary_save_directory, img_name)
+                )
