@@ -8,7 +8,7 @@ import multiprocessing
 from multiprocessing import Pool
 
 
-def get_mod_mask(npa, mask_color_type_1=None, mask_color_type_2=None):
+def get_mod_mask(npa, mask_color_type_1_1=None, mask_color_type_1_2=None, mask_color_type_2_1=None, mask_color_type_2_2=None):
     """
     Converts a multi-channel mask into a single-channel mask based on specified colors.
     """
@@ -17,12 +17,16 @@ def get_mod_mask(npa, mask_color_type_1=None, mask_color_type_2=None):
         mod_img = np.zeros((npa.shape[0], npa.shape[1]), dtype=np.uint8)
 
         # Vectorized comparison for mask_color_type_1
-        mask_1 = np.all(npa == mask_color_type_1, axis=-1)
-        mod_img[mask_1] = 3
+        mask_1_1 = np.all(npa == mask_color_type_1_1, axis=-1)
+        mask_1_2 = np.all(npa == mask_color_type_1_2, axis=-1)
+        mask_1 = np.logical_or(mask_1_1, mask_1_2)  # Combine both conditions
+        mod_img[mask_1] = 1 # Assign Class ID for mask_color_type_1
 
         # Vectorized comparison for mask_color_type_2
-        mask_2 = np.all(npa == mask_color_type_2, axis=-1)
-        mod_img[mask_2] = 4
+        mask_2_1 = np.all(npa == mask_color_type_2_1, axis=-1)
+        mask_2_2 = np.all(npa == mask_color_type_2_2, axis=-1)
+        mask_2 = np.logical_or(mask_2_1, mask_2_2)  # Combine both conditions
+        mod_img[mask_2] = 2 # Assign Class ID for mask_color_type_2
 
         # Any other pixel remains 0
     elif npa.ndim == 2:
@@ -34,7 +38,7 @@ def get_mod_mask(npa, mask_color_type_1=None, mask_color_type_2=None):
     return mod_img
 
 
-def process_single_mask(filepath, load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2):
+def process_single_mask(filepath, load_folderpath, save_folderpath, mask_color_type_1_1, mask_color_type_2_1, mask_color_type_1_2, mask_color_type_2_2):
     """
     Processes a single mask file: converts it to single-channel and saves it.
     """
@@ -46,7 +50,7 @@ def process_single_mask(filepath, load_folderpath, save_folderpath, mask_color_t
 
         image = Image.open(os.path.join(load_folderpath, filepath))
         npa = np.array(image)
-        mod_img = get_mod_mask(npa, mask_color_type_1, mask_color_type_2)
+        mod_img = get_mod_mask(npa=npa, mask_color_type_1_1=mask_color_type_1_1, mask_color_type_2_1=mask_color_type_2_1, mask_color_type_1_2=mask_color_type_1_2, mask_color_type_2_2=mask_color_type_2_2)
         utils.lblsave(savepath, mod_img)
     except Exception as e:
         print(f"Error processing {filepath}: {e}")
@@ -55,11 +59,10 @@ def process_wrapper(args):
     """
     Wrapper function for multiprocessing to handle arguments.
     """
-    filepath, load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2 = args
-    process_single_mask(filepath, load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2)
+    filepath, load_folderpath, save_folderpath, mask_color_type_1_1, mask_color_type_2_1, mask_color_type_1_2, mask_color_type_2_2 = args
+    process_single_mask(filepath=filepath, load_folderpath=load_folderpath, save_folderpath=save_folderpath, mask_color_type_1_1=mask_color_type_1_1, mask_color_type_2_1=mask_color_type_2_1, mask_color_type_1_2=mask_color_type_1_2, mask_color_type_2_2=mask_color_type_2_2)
 
-
-def process_masks_multiprocessing(load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2):
+def process_masks_multiprocessing(load_folderpath, save_folderpath, mask_color_type_1_1=None, mask_color_type_2_1=None, mask_color_type_1_2=None, mask_color_type_2_2=None):
     """
     Processes all masks in the folder using multiprocessing for faster execution.
     """
@@ -76,7 +79,7 @@ def process_masks_multiprocessing(load_folderpath, save_folderpath, mask_color_t
 
     # Prepare arguments for the wrapper function
     args = [
-        (filepath, load_folderpath, save_folderpath, mask_color_type_1, mask_color_type_2)
+        (filepath, load_folderpath, save_folderpath, mask_color_type_1_1, mask_color_type_2_1, mask_color_type_1_2, mask_color_type_2_2)
         for filepath in multichannel_mask_names
     ]
 
@@ -117,21 +120,20 @@ def printimg(im):
 
 if __name__ == "__main__":
     # Input and output folder paths
-    load_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna_kiosk/og_color_masks"
-    save_folderpath = "/home/snaak/Documents/datasets/bologna/multiingredient_bologna_kiosk/og_png_class_masks"
+    load_folderpath = "/home/snaak/Documents/datasets/cheese/multi_cheese_pickup_and_check/augmented_color_masks"
+    save_folderpath = "/home/snaak/Documents/datasets/cheese/multi_cheese_pickup_and_check/masks"
 
     # Define mask colors
-    mask_color_type_1 = [61, 61, 245]  # Top bologna color
-    mask_color_type_2 = [64, 188, 240]  # Other bologna color
+    # mask_color_type_1 = [61, 61, 245]  # Top bologna color
+    # mask_color_type_2 = [64, 188, 240]  # Other bologna color
 
     # for sandwich check images
-    # mask_color_type_2=[250, 50, 83] # top cheese color - augment first then convert to single channel
-    # mask_color_type_1=[61, 61, 245] # other cheese color - augment first then convert to single channel
-    
-    # for ingredient pickup images
-#     mask_color_type_1=[255, 106, 77] # top cheese color - augment first then convert to single channel
-# +   mask_color_type_2=[250, 250, 55] # other cheese color - augment first then convert to single channel
+    mask_color_type_1_1=[250, 50, 83] # top cheese color - augment first then convert to single channel
+    mask_color_type_2_1=[61, 61, 245] # other cheese color - augment first then convert to single channel
 
+    # for ingredient pickup images
+    mask_color_type_2_2=[255, 106, 77] # top cheese color - augment first then convert to single channel
+    mask_color_type_1_2=[250, 250, 55] # other cheese color - augment first then convert to single channel
 
     # Test pixel values
     # Uncomment to test with a specific image
@@ -146,6 +148,8 @@ if __name__ == "__main__":
     process_masks_multiprocessing(
         load_folderpath=load_folderpath,
         save_folderpath=save_folderpath,
-        mask_color_type_1=mask_color_type_1,
-        mask_color_type_2=mask_color_type_2
+        mask_color_type_1_1=mask_color_type_1_1,
+        mask_color_type_2_1=mask_color_type_2_1,
+        mask_color_type_1_2=mask_color_type_1_2,
+        mask_color_type_2_2=mask_color_type_2_2
     )
