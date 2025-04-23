@@ -109,25 +109,25 @@ if __name__ == "__main__":
     ham_area_pixels = np.pi * (ham_radius**2) * (1 / pixels_to_m**2)
 
     # initialise model
-    Cheese_UNet = Ingredients_UNet(
-        count=False,
-        classes=["background", "top_cheese", "other_cheese"],
-        model_path="logs/cheese/cheese_check/best_epoch_weights.pth",
-        mix_type=0,
-        num_classes=3,
-    )
-    # Ham_UNet = Ingredients_UNet(
+    # Cheese_UNet = Ingredients_UNet(
     #     count=False,
-    #     classes=["background", "", "", "top_ham", "other_ham"],
-    #     model_path="logs/ham/bologna_check/best_epoch_weights.pth",
+    #     classes=["background", "top_cheese", "other_cheese"],
+    #     model_path="logs/cheese/cheese_check/best_epoch_weights.pth",
     #     mix_type=0,
-    #     num_classes=5,
+    #     num_classes=3,
     # )
+    Ham_UNet = Ingredients_UNet(
+        count=False,
+        classes=["background", "", "", "top_ham", "other_ham"],
+        model_path="logs/ham/bologna_check/best_epoch_weights.pth",
+        mix_type=0,
+        num_classes=5,
+    )
     img_utils = ImageUtils()
 
     # for directory
-    load_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_1_T/"
-    save_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_1_T/cheese_check_model/pred_masks/"
+    load_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_2_T/"
+    save_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_2_T/bologna_check_model/pred_masks/"
     #binary_save_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_2_T/bologna_check_model/pred_binary_masks/"
 
     # test pickup images
@@ -247,7 +247,8 @@ if __name__ == "__main__":
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
 
-            r_image = Cheese_UNet.detect_image(Im.fromarray(unet_input_image))
+            # r_image = Cheese_UNet.detect_image(Im.fromarray(unet_input_image))
+            r_image = Ham_UNet.detect_image(Im.fromarray(unet_input_image))
 
             # cv2.imshow("r_image", np.array(r_image))
             # cv2.waitKey(0)
