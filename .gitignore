@@ -4,6 +4,6 @@ test_images/
 __pycache__
 *.png
 *.pth
-unet_env/
+.unet_env/
 .venv/
 **.jpg
