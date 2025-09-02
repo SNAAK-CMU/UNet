@@ -81,7 +81,7 @@ if __name__ == "__main__":
     # Generally speaking, the training effect of the network starting from 0 will be very poor, because the weights are too random and the feature extraction effect is not obvious. Therefore, it is very, very, very not recommended that you start training from 0!
     # If you must start from 0, you can learn about the imagenet data set. First, train the classification model to obtain the weight of the backbone part of the network. The backbone part of the classification model is common to the model, and training is performed based on this.
     # ----------------------------------------------------------------------------------------------------------------------------#
-    model_path = ""
+    model_path = "/home/snaak/Documents/Abhi/Vision/unet/logs/cheese/cheese_check/best_epoch_weights.pth"
     # -----------------------------------------------------#
     #   input_shape     Enter the size of the image, must be a multiple of 32
     # -----------------------------------------------------#
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------#
     #   save_dir        The folder where weights and log files are saved
     # ------------------------------------------------------------------#
-    save_dir            = 'logs/cheese/run3'
+    save_dir            = '/home/snaak/Documents/Abhi/Vision/unet/logs/cheese/multi_cheese_pickup_and_check/'
     # ------------------------------------------------------------------#
     #   eval_flag       Whether to perform evaluation during training, the evaluation object is the verification set
     #   eval_period     Represents how many epochs are evaluated once. Frequent evaluation is not recommended.
@@ -197,7 +197,7 @@ if __name__ == "__main__":
     # ------------------------------#
     #   Dataset path
     # ------------------------------#
-    VOCdevkit_path  = '/home/snaak/Documents/datasets/cheese/training_sets'
+    VOCdevkit_path  = '/home/snaak/Documents/datasets/cheese/multi_cheese_pickup_and_check/'
     # ------------------------------------------------------------------#
     #   Suggested options:
     # When there are few categories (several categories), set to True
@@ -208,22 +208,22 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------#
     #   Whether to use focal loss to prevent imbalance of positive and negative samples
     # ------------------------------------------------------------------#
-    focal_loss      = False
+    focal_loss      = True
     # ------------------------------------------------------------------#
     #   Whether to assign different loss weights to different categories, the default is balanced.
     #   If setting, pay attention to set it in numpy format, the length is the same as num classes.
     #   like:
     #   num_classes = 3
-    #   cls_weights = np.array([1, 2, 3], np.float32)
+    # cls_weights = np.array([1, 3, 2], np.float32)
     # ------------------------------------------------------------------#
-    cls_weights     = np.ones([num_classes], np.float32)
+    cls_weights     = np.array([1, 3, 2], np.float32)
     # ------------------------------------------------------------------#
     #   num_workers     Used to set whether to use multi-threading to read data, 1 means turning off multi-threading
     #                   Turning it on will speed up data reading, but will take up more memory.
     #                   Sometimes enabling multi-threading in Keras is much slower.
     #                   Turn on multi-threading when IO is the bottleneck, that is, the GPU computing speed is much greater than the speed of reading images.
     # ------------------------------------------------------------------#
-    num_workers     = 4
+    num_workers     = 12
 
     seed_everything(seed)
     # ------------------------------------------------------#
