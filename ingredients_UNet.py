@@ -112,7 +112,7 @@ if __name__ == "__main__":
     Cheese_UNet = Ingredients_UNet(
         count=False,
         classes=["background", "top_cheese", "other_cheese"],
-        model_path="logs/cheese/cheese_check/best_epoch_weights.pth",
+        model_path="logs/cheese/UNet_CHE_000/best_epoch_weights.pth",
         mix_type=0,
         num_classes=3,
     )
@@ -123,12 +123,46 @@ if __name__ == "__main__":
     #     mix_type=0,
     #     num_classes=5,
     # )
+    # Bread_UNet = Ingredients_UNet(
+    #     count = False,
+    #     classes = ["background", "top_bread", "other_bread"],
+    #     mix_type = 0,
+    #     num_classes = 3,
+    #     model_path = "logs/bread/UNet_BRE_000/best_epoch_weights.pth"
+    # )
     # img_utils = ImageUtils()
 
     # for directory
-    load_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_1_T/"
-    save_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_1_T/multi_cheese_model/pred_masks/"
-    binary_save_directory = "/home/snaak/Documents/datasets/testsets/SCH_images_041525_1_T/multi_cheese_model/pred_binary_masks/"
+    load_directory = "/home/snaak/Documents/datasets/testsets/CHE_image_031925_2_T/"
+    save_directory = "/home/snaak/Documents/datasets/testsets/CHE_image_031925_2_T/cheese_model/pred_masks/"
+    # binary_save_directory = "/home/snaak/Documents/datasets/testsets/BRE_images_090925_T/bread_model/pred_binary_masks/"
+    
+    # test images in directory
+    img_names = os.listdir(load_directory)
+    for img_name in tqdm(img_names):
+        if img_name.lower().endswith(
+            (
+                ".bmp",
+                ".dib",
+                ".png",
+                ".jpg",
+                ".jpeg",
+                ".pbm",
+                ".pgm",
+                ".ppm",
+                ".tif",
+                ".tiff",
+            )
+        ):
+            image_path = os.path.join(load_directory, img_name)
+            image = Image.open(image_path)
+            output = Cheese_UNet.detect_image(image)
+            # save outputs
+            if not os.path.exists(save_directory):
+                os.makedirs(save_directory)
+            output.save(os.path.join(save_directory, img_name))
+            
+    
 
     # test pickup images
     # img_names = os.listdir(load_directory)
@@ -216,73 +250,73 @@ if __name__ == "__main__":
     #                 os.path.join(binary_save_directory, img_name)
     #             )
 
-    # test assembly images
-    img_names = os.listdir(load_directory)
-    for img_name in tqdm(img_names):
-        if img_name.lower().endswith(
-            (
-                ".bmp",
-                ".dib",
-                ".png",
-                ".jpg",
-                ".jpeg",
-                ".pbm",
-                ".pgm",
-                ".ppm",
-                ".tif",
-                ".tiff",
-            )
-        ):
-            image_path = os.path.join(load_directory, img_name)
-            image = Image.open(image_path)
+    # # test assembly images
+    # img_names = os.listdir(load_directory)
+    # for img_name in tqdm(img_names):
+    #     if img_name.lower().endswith(
+    #         (
+    #             ".bmp",
+    #             ".dib",
+    #             ".png",
+    #             ".jpg",
+    #             ".jpeg",
+    #             ".pbm",
+    #             ".pgm",
+    #             ".ppm",
+    #             ".tif",
+    #             ".tiff",
+    #         )
+    #     ):
+    #         image_path = os.path.join(load_directory, img_name)
+    #         image = Image.open(image_path)
 
-            # assembly_mask = np.zeros_like(np.array(image))
-            # assembly_mask[
-            #     TRAY_BOX_PIX[1] : TRAY_BOX_PIX[3], TRAY_BOX_PIX[0] : TRAY_BOX_PIX[2]
-            # ] = 255
-            # unet_input_image = cv2.bitwise_and(np.array(image), assembly_mask)
-            unet_input_image = np.array(image)
+    #         # assembly_mask = np.zeros_like(np.array(image))
+    #         # assembly_mask[
+    #         #     TRAY_BOX_PIX[1] : TRAY_BOX_PIX[3], TRAY_BOX_PIX[0] : TRAY_BOX_PIX[2]
+    #         # ] = 255
+    #         # unet_input_image = cv2.bitwise_and(np.array(image), assembly_mask)
+    #         unet_input_image = np.array(image)
 
-            # cv2.imshow("unet_input_image", unet_input_image)
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
+    #         # cv2.imshow("unet_input_image", unet_input_image)
+    #         # cv2.waitKey(0)
+    #         # cv2.destroyAllWindows()
 
-            r_image = Cheese_UNet.detect_image(Im.fromarray(unet_input_image))
-            # r_image = Ham_UNet.detect_image(Im.fromarray(unet_input_image))
+    #         r_image = Cheese_UNet.detect_image(Im.fromarray(unet_input_image))
+    #         # r_image = Ham_UNet.detect_image(Im.fromarray(unet_input_image))
 
-            # cv2.imshow("r_image", np.array(r_image))
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
+    #         # cv2.imshow("r_image", np.array(r_image))
+    #         # cv2.waitKey(0)
+    #         # cv2.destroyAllWindows()
 
-            # Get the cheese mask using UNet
-            binary_mask, max_contour_binary_mask, max_contour_area = (
-                Cheese_UNet.get_top_layer_binary(
-                    Im.fromarray(unet_input_image), [250, 106, 77]
-                )
-            )
-            # binary_mask, max_contour_binary_mask, max_contour_area = Ham_UNet.get_top_layer_binary(
-            #     Im.fromarray(unet_input_image), [61, 61, 245]
-            # )
+    #         # Get the cheese mask using UNet
+    #         binary_mask, max_contour_binary_mask, max_contour_area = (
+    #             Cheese_UNet.get_top_layer_binary(
+    #                 Im.fromarray(unet_input_image), [250, 106, 77]
+    #             )
+    #         )
+    #         # binary_mask, max_contour_binary_mask, max_contour_area = Ham_UNet.get_top_layer_binary(
+    #         #     Im.fromarray(unet_input_image), [61, 61, 245]
+    #         # )
 
-            # save overlay image
-            if not os.path.exists(save_directory):
-                os.makedirs(save_directory)
-            r_image.save(os.path.join(save_directory, img_name))
+    #         # save overlay image
+    #         if not os.path.exists(save_directory):
+    #             os.makedirs(save_directory)
+    #         r_image.save(os.path.join(save_directory, img_name))
 
 
-            # save binary mask
-            if not os.path.exists(binary_save_directory):
-                os.makedirs(binary_save_directory)
-            if max_contour_binary_mask is not None:
-                max_contour_binary_mask = Image.fromarray(max_contour_binary_mask)
-                max_contour_binary_mask.save(
-                    os.path.join(binary_save_directory, img_name)
-                )
-            else:
-                # save black image
-                max_contour_binary_mask = Image.fromarray(
-                    np.zeros_like(np.array(image))
-                )
-                max_contour_binary_mask.save(
-                    os.path.join(binary_save_directory, img_name)
-                )
+    #         # save binary mask
+    #         if not os.path.exists(binary_save_directory):
+    #             os.makedirs(binary_save_directory)
+    #         if max_contour_binary_mask is not None:
+    #             max_contour_binary_mask = Image.fromarray(max_contour_binary_mask)
+    #             max_contour_binary_mask.save(
+    #                 os.path.join(binary_save_directory, img_name)
+    #             )
+    #         else:
+    #             # save black image
+    #             max_contour_binary_mask = Image.fromarray(
+    #                 np.zeros_like(np.array(image))
+    #             )
+    #             max_contour_binary_mask.save(
+    #                 os.path.join(binary_save_directory, img_name)
+    #             )
