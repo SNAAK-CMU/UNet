@@ -11,13 +11,13 @@ from tqdm import tqdm
 #
 # Currently, the library uses the test set as a verification set and does not divide the test set separately.
 #------------------------------------------------------#
-trainval_percent    = 0.95 # the test set has been pre separated, if not, change this to 0.95 ~ 5% test set
-train_percent       = 0.72
+trainval_percent    = 0.90 # the test set has been pre separated, if not, change this to 0.95 ~ 5% test set
+train_percent       = 0.70
 #-------------------------------------------------------#
 # Point to the folder where the VOC data set is located
 # Default points to the VOC data set in the root directory
 #-------------------------------------------------------#
-VOCdevkit_path      = '/home/snaak/Documents/datasets/cheese/multi_cheese_pickup_and_check'
+VOCdevkit_path      = '/home/snaak/Documents/datasets/bread/BRE_001'
 
 if __name__ == "__main__":
     random.seed(0)

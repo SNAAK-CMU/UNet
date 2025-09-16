@@ -84,7 +84,7 @@ class Unet(object):
         show_config(**self._defaults)
 
     # ---------------------------------------------------#
-    #   Set up the netwoek and device
+    #   Set up the network and device
     # ---------------------------------------------------#
     def generate(self, onnx=False):
         self.net = unet(num_classes = self.num_classes, backbone=self.backbone)
