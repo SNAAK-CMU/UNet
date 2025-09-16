@@ -55,9 +55,10 @@ class Ingredients_UNet(Unet):
         self.img_utils = ImageUtils()
 
     def get_top_layer(self, image, top_layer_rgb):
-        mask = np.array(
-            self.detect_image(image)
-        )  # TODO: change this in parent class to assign class ID to pixels instead of RGB
+        mask = self.detect_image(image)
+         # TODO: change this in parent class to assign class ID to pixels instead of RGB
+        # mask.save("/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/test_raw_mask.jpg")
+        mask = np.array(mask)
         mod_img = np.zeros([np.shape(mask)[0], np.shape(mask)[1], np.shape(mask)[2]])
         if mask.ndim == 3:
             for height in range(mask.shape[0]):
@@ -67,7 +68,10 @@ class Ingredients_UNet(Unet):
         return Image.fromarray(np.uint8(mod_img))
 
     def get_top_layer_binary(self, image, top_layer_rgb):
-        top_layer_mask = np.array(self.get_top_layer(image, top_layer_rgb))
+        # image.save("/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/test_source_img.jpg")
+        top_layer_mask = self.get_top_layer(image, top_layer_rgb)
+        # top_layer_mask.save("/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/test_top_layer_mask.jpg")
+        top_layer_mask = np.array(top_layer_mask)
         binary_mask = Image.fromarray(
             self.img_utils.binarize_image(masked_img=np.array(top_layer_mask))
         )
@@ -88,7 +92,7 @@ class Ingredients_UNet(Unet):
         # create a mask for the largest contour
         max_contour_mask = np.zeros_like(np.array(binary_mask))
         cv2.drawContours(
-            max_contour_mask, [max_contour], -1, (255), thickness=cv2.FILLED
+            max_contour_mask, [max_contour], -1, (255,), thickness=cv2.FILLED
         )
         # create a binary mask
         max_contour_binary_mask = np.zeros_like(np.array(binary_mask))
@@ -109,13 +113,13 @@ if __name__ == "__main__":
     ham_area_pixels = np.pi * (ham_radius**2) * (1 / pixels_to_m**2)
 
     # initialise model
-    Cheese_UNet = Ingredients_UNet(
-        count=False,
-        classes=["background", "top_cheese", "other_cheese"],
-        model_path="logs/cheese/UNet_CHE_000/best_epoch_weights.pth",
-        mix_type=0,
-        num_classes=3,
-    )
+    # Cheese_UNet = Ingredients_UNet(
+    #     count=False,
+    #     classes=["background", "top_cheese", "other_cheese"],
+    #     model_path="logs/cheese/UNet_CHE_000/best_epoch_weights.pth",
+    #     mix_type=0,
+    #     num_classes=3,
+    # )
     # Ham_UNet = Ingredients_UNet(
     #     count=False,
     #     classes=["background", "", "", "top_ham", "other_ham"],
@@ -123,46 +127,50 @@ if __name__ == "__main__":
     #     mix_type=0,
     #     num_classes=5,
     # )
-    # Bread_UNet = Ingredients_UNet(
-    #     count = False,
-    #     classes = ["background", "top_bread", "other_bread"],
-    #     mix_type = 0,
-    #     num_classes = 3,
-    #     model_path = "logs/bread/UNet_BRE_000/best_epoch_weights.pth"
-    # )
+    Bread_UNet = Ingredients_UNet(
+        count = False,
+        classes = ["background", "top_bread", "other_bread"],
+        mix_type = 1,
+        num_classes = 3,
+        model_path = "logs/bread/UNet_BRE_000/best_epoch_weights.pth"
+    )
     # img_utils = ImageUtils()
 
     # for directory
-    load_directory = "/home/snaak/Documents/datasets/testsets/CHE_image_031925_2_T/"
-    save_directory = "/home/snaak/Documents/datasets/testsets/CHE_image_031925_2_T/cheese_model/pred_masks/"
-    # binary_save_directory = "/home/snaak/Documents/datasets/testsets/BRE_images_090925_T/bread_model/pred_binary_masks/"
+    # load_directory = "/home/snaak/Documents/datasets/testsets/CHE_image_031925_2_T/"
+    # save_directory = "/home/snaak/Documents/datasets/testsets/CHE_image_031925_2_T/cheese_model/pred_masks/"
+    # # binary_save_directory = "/home/snaak/Documents/datasets/testsets/BRE_images_090925_T/bread_model/pred_binary_masks/"
     
-    # test images in directory
-    img_names = os.listdir(load_directory)
-    for img_name in tqdm(img_names):
-        if img_name.lower().endswith(
-            (
-                ".bmp",
-                ".dib",
-                ".png",
-                ".jpg",
-                ".jpeg",
-                ".pbm",
-                ".pgm",
-                ".ppm",
-                ".tif",
-                ".tiff",
-            )
-        ):
-            image_path = os.path.join(load_directory, img_name)
-            image = Image.open(image_path)
-            output = Cheese_UNet.detect_image(image)
-            # save outputs
-            if not os.path.exists(save_directory):
-                os.makedirs(save_directory)
-            output.save(os.path.join(save_directory, img_name))
-            
+    # # test images in directory
+    # img_names = os.listdir(load_directory)
+    # for img_name in tqdm(img_names):
+    #     if img_name.lower().endswith(
+    #         (
+    #             ".bmp",
+    #             ".dib",
+    #             ".png",
+    #             ".jpg",
+    #             ".jpeg",
+    #             ".pbm",
+    #             ".pgm",
+    #             ".ppm",
+    #             ".tif",
+    #             ".tiff",
+    #         )
+    #     ):
+    #         image_path = os.path.join(load_directory, img_name)
+    #         image = Image.open(image_path)
+    #         output = Bread_UNet.detect_image(image)
+    #         # save outputs
+    #         if not os.path.exists(save_directory):
+    #             os.makedirs(save_directory)
+    #         output.save(os.path.join(save_directory, img_name))
     
+    # test single image
+    
+    image_path = "/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/bread_pickup_unet_input_image.jpg"
+    image = Image.open(image_path)
+    top_layer_binary, max_contour_top_layer_binary, max_contour_area = Bread_UNet.get_top_layer_binary(image, [250, 106, 77])
 
     # test pickup images
     # img_names = os.listdir(load_directory)
