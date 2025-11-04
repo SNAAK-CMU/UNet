@@ -130,47 +130,47 @@ if __name__ == "__main__":
     Bread_UNet = Ingredients_UNet(
         count = False,
         classes = ["background", "top_bread", "other_bread"],
-        mix_type = 1,
+        mix_type = 0,
         num_classes = 3,
-        model_path = "logs/bread/UNet_BRE_000/best_epoch_weights.pth"
+        model_path = "logs/bread/UNet_BRE_001/best_epoch_weights.pth"
     )
     # img_utils = ImageUtils()
 
     # for directory
-    # load_directory = "/home/snaak/Documents/datasets/testsets/CHE_image_031925_2_T/"
-    # save_directory = "/home/snaak/Documents/datasets/testsets/CHE_image_031925_2_T/cheese_model/pred_masks/"
+    load_directory = "/home/snaak/Documents/data/Testsets/SCH_001"
+    save_directory = "/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/UNet/UNet_BRE_001_Tests/SCH_001_results/"
     # # binary_save_directory = "/home/snaak/Documents/datasets/testsets/BRE_images_090925_T/bread_model/pred_binary_masks/"
     
-    # # test images in directory
-    # img_names = os.listdir(load_directory)
-    # for img_name in tqdm(img_names):
-    #     if img_name.lower().endswith(
-    #         (
-    #             ".bmp",
-    #             ".dib",
-    #             ".png",
-    #             ".jpg",
-    #             ".jpeg",
-    #             ".pbm",
-    #             ".pgm",
-    #             ".ppm",
-    #             ".tif",
-    #             ".tiff",
-    #         )
-    #     ):
-    #         image_path = os.path.join(load_directory, img_name)
-    #         image = Image.open(image_path)
-    #         output = Bread_UNet.detect_image(image)
-    #         # save outputs
-    #         if not os.path.exists(save_directory):
-    #             os.makedirs(save_directory)
-    #         output.save(os.path.join(save_directory, img_name))
+    # test images in directory
+    img_names = os.listdir(load_directory)
+    for img_name in tqdm(img_names):
+        if img_name.lower().endswith(
+            (
+                ".bmp",
+                ".dib",
+                ".png",
+                ".jpg",
+                ".jpeg",
+                ".pbm",
+                ".pgm",
+                ".ppm",
+                ".tif",
+                ".tiff",
+            )
+        ):
+            image_path = os.path.join(load_directory, img_name)
+            image = Image.open(image_path)
+            output = Bread_UNet.detect_image(image)
+            # save outputs
+            if not os.path.exists(save_directory):
+                os.makedirs(save_directory)
+            output.save(os.path.join(save_directory, img_name))
     
     # test single image
     
-    image_path = "/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/bread_pickup_unet_input_image.jpg"
-    image = Image.open(image_path)
-    top_layer_binary, max_contour_top_layer_binary, max_contour_area = Bread_UNet.get_top_layer_binary(image, [250, 106, 77])
+    # image_path = "/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/bread_pickup_unet_input_image.jpg"
+    # image = Image.open(image_path)
+    # top_layer_binary, max_contour_top_layer_binary, max_contour_area = Bread_UNet.get_top_layer_binary(image, [250, 106, 77])
 
     # test pickup images
     # img_names = os.listdir(load_directory)
