@@ -206,6 +206,9 @@ if __name__ == "__main__":
     # image_path = "/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/bread_pickup_unet_input_image.jpg"
     # image = Image.open(image_path)
     # top_layer_binary, max_contour_top_layer_binary, max_contour_area = Bread_UNet.get_top_layer_binary(image, [250, 106, 77])
+    # image_path = "/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/bread_pickup_unet_input_image.jpg"
+    # image = Image.open(image_path)
+    # top_layer_binary, max_contour_top_layer_binary, max_contour_area = Bread_UNet.get_top_layer_binary(image, [250, 106, 77])
 
     # test pickup images
     # img_names = os.listdir(load_directory)
