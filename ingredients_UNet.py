@@ -48,6 +48,11 @@ TRAY_BOX_PIX = (
 # 1098 pix/m ; ham_radius = 52 pix
 HAM_RADIUS = 0.05  # metres
 
+TOP_CHEESE_RGB = (250, 106, 77)
+OTHER_CHEESE_RGB = (250, 250, 55)
+TOP_BOLOGNA_RGB = (61, 61, 245)
+OTHER_BOLOGNA_RGB = (64, 188, 240)
+
 
 class Ingredients_UNet(Unet):
     def __init__(self, **kwargs):
@@ -113,13 +118,13 @@ if __name__ == "__main__":
     ham_area_pixels = np.pi * (ham_radius**2) * (1 / pixels_to_m**2)
 
     # initialise model
-    # Cheese_UNet = Ingredients_UNet(
-    #     count=False,
-    #     classes=["background", "top_cheese", "other_cheese"],
-    #     model_path="logs/cheese/UNet_CHE_000/best_epoch_weights.pth",
-    #     mix_type=0,
-    #     num_classes=3,
-    # )
+    Cheese_UNet = Ingredients_UNet(
+        count=False,
+        classes=["background", "top_cheese", "other_cheese"],
+        model_path="logs/cheese/UNet_CHE_000/best_epoch_weights.pth",
+        mix_type=1,
+        num_classes=3,
+    )
     # Ham_UNet = Ingredients_UNet(
     #     count=False,
     #     classes=["background", "", "", "top_ham", "other_ham"],
@@ -127,50 +132,80 @@ if __name__ == "__main__":
     #     mix_type=0,
     #     num_classes=5,
     # )
-    Bread_UNet = Ingredients_UNet(
-        count = False,
-        classes = ["background", "top_bread", "other_bread"],
-        mix_type = 1,
-        num_classes = 3,
-        model_path = "logs/bread/UNet_BRE_000/best_epoch_weights.pth"
-    )
+    # Bread_UNet = Ingredients_UNet(
+    #     count = False,
+    #     classes = ["background", "top_bread", "other_bread"],
+    #     mix_type = 1,
+    #     num_classes = 3,
+    #     model_path = "logs/bread/UNet_BRE_000/best_epoch_weights.pth"
+    # )
     # img_utils = ImageUtils()
 
     # for directory
-    # load_directory = "/home/snaak/Documents/datasets/testsets/CHE_image_031925_2_T/"
-    # save_directory = "/home/snaak/Documents/datasets/testsets/CHE_image_031925_2_T/cheese_model/pred_masks/"
-    # # binary_save_directory = "/home/snaak/Documents/datasets/testsets/BRE_images_090925_T/bread_model/pred_binary_masks/"
+    load_directory = "/home/snaak/Desktop/unet_vs_sam/images/"
+    save_directory = "/home/snaak/Desktop/unet_vs_sam/unet_overlay/"
+    # binary_save_directory = "/home/snaak/Desktop/unet_cheese_testset_results_mix2/"
     
-    # # test images in directory
-    # img_names = os.listdir(load_directory)
-    # for img_name in tqdm(img_names):
-    #     if img_name.lower().endswith(
-    #         (
-    #             ".bmp",
-    #             ".dib",
-    #             ".png",
-    #             ".jpg",
-    #             ".jpeg",
-    #             ".pbm",
-    #             ".pgm",
-    #             ".ppm",
-    #             ".tif",
-    #             ".tiff",
-    #         )
-    #     ):
-    #         image_path = os.path.join(load_directory, img_name)
-    #         image = Image.open(image_path)
-    #         output = Bread_UNet.detect_image(image)
-    #         # save outputs
-    #         if not os.path.exists(save_directory):
-    #             os.makedirs(save_directory)
-    #         output.save(os.path.join(save_directory, img_name))
+    # # test images in directory (recursively)
+    image_extensions = (
+        ".bmp",
+        ".dib",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".pbm",
+        ".pgm",
+        ".ppm",
+        ".tif",
+        ".tiff",
+    )
+
+    # gather all image file paths in load_directory and subdirectories
+    image_paths = []
+    for root, _, files in os.walk(load_directory):
+        for fname in files:
+            if fname.lower().endswith(image_extensions):
+                image_paths.append(os.path.join(root, fname))
+
+    for image_path in tqdm(image_paths):
+        # preserve relative path when saving so subdirectory structure is kept
+        rel_path = os.path.relpath(image_path, load_directory)
+        out_path = os.path.join(save_directory, rel_path)
+        out_dir = os.path.dirname(out_path)
+
+        # open, process and save
+        image = Image.open(image_path)
+        output = Cheese_UNet.detect_image(image)
+
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir, exist_ok=True)
+
+        output_arr = np.array(output)
+        image_arr = np.array(image)
+
+        # create mask where all 3 channels of output_arr are equal to TOP_CHEESE_RGB
+        mask = np.all(output_arr == TOP_CHEESE_RGB, axis=-1)
+
+        alpha = 0.5 # 0.0 to 1.0, where 0.0 means only original image and 1.0 means only red overlay
+        
+        # apply RED color to the masked area in the original image
+        result = image_arr.copy().astype(np.float32)
+        result_rgb = result[..., :3]  # Get the RGB channels
+        masked_pixels = result_rgb[mask].astype(np.float32)
+        if masked_pixels.size > 0:
+            blended_pixels = (1 - alpha) * masked_pixels + alpha * np.array([255, 0, 0])  # Red color
+            result_rgb[mask] = blended_pixels.astype(np.uint8)
+
+        result[..., :3] = result_rgb  # Update the RGB channels in the result
+        result = np.clip(result, 0, 255)  # Ensure pixel values are valid
+        result = Image.fromarray(result.astype(np.uint8))
+        result.save(out_path)
     
     # test single image
     
-    image_path = "/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/bread_pickup_unet_input_image.jpg"
-    image = Image.open(image_path)
-    top_layer_binary, max_contour_top_layer_binary, max_contour_area = Bread_UNet.get_top_layer_binary(image, [250, 106, 77])
+    # image_path = "/home/snaak/Documents/manipulation_ws/src/snaak_vision/src/segmentation/bread_pickup_unet_input_image.jpg"
+    # image = Image.open(image_path)
+    # top_layer_binary, max_contour_top_layer_binary, max_contour_area = Bread_UNet.get_top_layer_binary(image, [250, 106, 77])
 
     # test pickup images
     # img_names = os.listdir(load_directory)
